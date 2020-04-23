@@ -3,11 +3,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Serilog.Sinks.Http;
 
 namespace Serilog.Sinks.GrafanaLoki
 {
-    public class GrafanaLokiHttpClient : IHttpClient
+    public class GrafanaLokiHttpClient : IGrafanaLokiHttpClient
     {
         protected readonly HttpClient HttpClient;
 
@@ -22,7 +21,7 @@ namespace Serilog.Sinks.GrafanaLoki
             SetCredentials(credentials);
         }
 
-        public void SetCredentials(GrafanaLokiCredentials credentials)
+        public virtual void SetCredentials(GrafanaLokiCredentials credentials)
         {
             if (credentials == null || string.IsNullOrEmpty(credentials.User))
             {
@@ -34,7 +33,7 @@ namespace Serilog.Sinks.GrafanaLoki
                 return;
             }
 
-            var token = Base64Encode($"{credentials.User}:{credentials.Password ?? string.Empty}");
+            var token = Helpers.Base64Encode($"{credentials.User}:{credentials.Password ?? string.Empty}");
             headers.Add("Authorization", $"Basic {token}");
         }
 
@@ -44,12 +43,6 @@ namespace Serilog.Sinks.GrafanaLoki
             return HttpClient.PostAsync(requestUri, content);
         }
 
-        public virtual void Dispose() => HttpClient.Dispose();
-
-        private static string Base64Encode(string plainText)
-        {
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-            return Convert.ToBase64String(plainTextBytes);
-        }
+        public virtual void Dispose() => HttpClient.Dispose();        
     }
 }

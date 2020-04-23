@@ -58,7 +58,7 @@ namespace Serilog.Sinks.GrafanaLoki
             int? queueLimit = null,
             TimeSpan? period = null,
             string apiVersion = null,
-            IHttpClient httpClient = null)
+            IGrafanaLokiHttpClient httpClient = null)
         {
             if (sinkConfiguration == null)
             {
@@ -89,7 +89,7 @@ namespace Serilog.Sinks.GrafanaLoki
             int? queueLimit,
             TimeSpan? period,
             string apiVersion,
-            IHttpClient httpClient)
+            IGrafanaLokiHttpClient httpClient)
         {
             if (formatter == null)
             {
@@ -103,6 +103,10 @@ namespace Serilog.Sinks.GrafanaLoki
             if (httpClient == null)
             {
                 httpClient = new GrafanaLokiHttpClient(null, credentials);
+            }
+            else if (credentials != null)
+            {
+                httpClient.SetCredentials(credentials);
             }
             if (batchFormatter == null)
             {
