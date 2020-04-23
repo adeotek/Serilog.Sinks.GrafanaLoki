@@ -14,6 +14,12 @@ namespace Serilog.Sinks.GrafanaLoki
             return string.Format("{0}{1}", url.TrimEnd('/'), string.Format(PostDataUri, apiVersion ?? DefaultApiVersion));
         }
 
+        public static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return Convert.ToBase64String(plainTextBytes);
+        }
+
         public static string GetUnixTimestamp(DateTime? dateTime = null)
         {
             var localTime = dateTime ?? DateTime.Now;

@@ -76,7 +76,7 @@ using (LogContext.PushProperty("ALabel", "ALabelValue"))
 ### Custom HTTP Client
 
 Serilog.Loki.GrafanaLoki is built on top of the popular [Serilog.Sinks.Http](https://github.com/FantasticFiasco/serilog-sinks-http) library to post log entries to Loki.
-In order to use a custom HttpClient you can extend the default HttpClient (`Serilog.Sinks.GrafanaLoki.GrafanaLokiHttpClient`), or create one from scratch by implementing `Serilog.Sinks.Http.IHttpClient`.
+In order to use a custom HttpClient you can extend the default HttpClient (`Serilog.Sinks.GrafanaLoki.GrafanaLokiHttpClient`), or create one from scratch by implementing `Serilog.Sinks.GrafanaLoki.IGrafanaLokiHttpClient` (which extends `Serilog.Sinks.Http.IHttpClient`).
 
 ```csharp
 // CustomHttpClient.cs
