@@ -12,8 +12,8 @@
     <Authors>George Benjamin-Schonberger</Authors>
     <Company>George Benjamin-Schonberger</Company>
     <Copyright>George Benjamin-Schonberger 2020</Copyright>
-    <AssemblyVersion>1.0.0.1</AssemblyVersion>
-    <FileVersion>1.0.0.1</FileVersion>
+    <AssemblyVersion>1.0.0.3</AssemblyVersion>
+    <FileVersion>1.0.0.3</FileVersion>
     <PackageIcon>logo_128_128.png</PackageIcon>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

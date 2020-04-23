@@ -117,7 +117,6 @@ namespace Serilog.Sinks.GrafanaLoki
             return sinkConfiguration.Http(requestUri, batchPostingLimit, queueLimit, period, formatter, batchFormatter, restrictedToMinimumLevel, httpClient);
         }
 
-
         public static string BuildPostUri(string url, string apiVersion = null)
         {
             return string.Format("{0}{1}", url.TrimEnd('/'), string.Format(PostDataUri, apiVersion ?? DefaultApiVersion));
