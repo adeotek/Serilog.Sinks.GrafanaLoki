@@ -29,7 +29,7 @@ namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests
             log.Dispose();
 
             // Assert
-            _client.RequestUri.ShouldBe(LoggerConfigurationGrafanaLokiExtensions.BuildPostUri(url));
+            _client.RequestUri.ShouldBe(Helpers.BuildPostUri(url));
         }
     }
 }

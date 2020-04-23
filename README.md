@@ -1,6 +1,8 @@
 # Serilog.Sinks.GrafanaLoki
 A Serilog Sink for Grafana's [Loki Log Aggregator](https://grafana.com/loki).
 
+![.NET Core](https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/workflows/.NET%20Core/badge.svg?branch=master)
+
 What is Loki?
 
 > Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate, as it does not index the contents of the logs, but rather a set of labels for each log stream.
