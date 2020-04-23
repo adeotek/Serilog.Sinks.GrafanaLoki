@@ -20,8 +20,6 @@ jobs:
         dotnet-version: 3.1.101
     - name: Install dependencies
       run: dotnet restore
-    - name: Build Reason
-      run: echo ${{github.ref}} and ${{github.event_name}}
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
