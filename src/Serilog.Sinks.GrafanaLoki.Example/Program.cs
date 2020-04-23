@@ -66,7 +66,7 @@ namespace Serilog.Sinks.GrafanaLoki.Example
                     null,
                     new List<GrafanaLokiLabel>() { new GrafanaLokiLabel() { Key = "app", Value = "Serilog.Sinks.GrafanaLoki.Example" } },
                     Events.LogEventLevel.Debug,
-                    LoggerConfigurationGrafanaLokiExtensions.DefaultOutputTemplate,
+                    Helpers.DefaultOutputTemplate,
                     null,
                     null,
                     1000,
