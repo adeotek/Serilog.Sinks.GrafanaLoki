@@ -62,7 +62,7 @@ Log.CloseAndFlush();
 
 ### Adding contextual (local) labels
 
-If you need to add contextual labels from a particular class or method, you can achive this with the following code:
+If you need to add contextual labels from a particular class or method, you can achieve this with the following code:
 
 ```csharp
 using (LogContext.PushProperty("ALabel", "ALabelValue"))
@@ -116,8 +116,8 @@ Log.Logger = new LoggerConfiguration()
 
 ### Using application settings configuration (`appsettings.json`)
 
-In order tu configure this sink using _Microsoft.Extensions.Configuration_, for example with ASP.NET Core or .NET Core, the package has as dependecy the [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) package.
-This example is for the JSON configuration file, but it should work fine with any configuration source (.ini, XML etc.) by making the apropriate format changes.
+In order to configure this sink using _Microsoft.Extensions.Configuration_, for example with ASP.NET Core or .NET Core, the package has as dependency the [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) package.
+This example is for the JSON configuration file, but it should work fine with any configuration source (.ini, XML etc.) by making the appropriate format changes.
 
 Instead of configuring the sink directly in code, you can make all the configurations in the configuration file and then just call `ReadFrom.Configuration()` method:
 
