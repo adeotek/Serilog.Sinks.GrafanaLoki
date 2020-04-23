@@ -43,17 +43,17 @@ namespace Serilog.Sinks.GrafanaLoki
             {
                 var stream = new GrafanaLokiStream();
                 batch.Streams.Add(stream);
-                stream.Labels.Add("level", GetLevel(logEvent.Level));
+                stream.Labels.AddOrReplace("level", GetLevel(logEvent.Level));
                 foreach (var item in _globalLabels)
                 {
-                    stream.Labels.Add(item.Key, item.Value);
+                    stream.Labels.AddOrReplace(item.Key, item.Value);
                 }
                 foreach (KeyValuePair<string, LogEventPropertyValue> property in logEvent.Properties)
                 {
                     // Some enrichers pass strings with quotes surrounding the values inside the string,
                     // which results in redundant quotes after serialization and a "bad request" response.
                     // To avoid this, remove all quotes from the value.
-                    stream.Labels.Add(property.Key, property.Value.ToString().Replace("\"", ""));
+                    stream.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", ""));
                 }
 
                 var sb = new StringBuilder();
@@ -68,7 +68,7 @@ namespace Serilog.Sinks.GrafanaLoki
                         e = e.InnerException;
                     }
                 }
-                stream.Entries.Add(GetTimestamp(), sb.ToString().TrimEnd(new char[] { '\r', '\n' }));
+                stream.Entries.AddOrAppend(Helpers.GetUnixTimestamp(), sb.ToString().TrimEnd(new char[] { '\r', '\n' }));
             }
 
             if (batch.Streams.Count > 0)
@@ -104,10 +104,10 @@ namespace Serilog.Sinks.GrafanaLoki
                 batch.Streams.Add(stream);
                 foreach (var item in _globalLabels)
                 {
-                    stream.Labels.Add(item.Key, item.Value);
+                    stream.Labels.AddOrReplace(item.Key, item.Value);
                 }
 
-                stream.Entries.Add(GetTimestamp(), logEvent.TrimEnd(new char[] { '\r', '\n' }));
+                stream.Entries.AddOrAppend(Helpers.GetUnixTimestamp(), logEvent.TrimEnd(new char[] { '\r', '\n' }));
             }
 
             if (batch.Streams.Count > 0)
@@ -123,14 +123,6 @@ namespace Serilog.Sinks.GrafanaLoki
                 return "info";
             }
             return level.ToString().ToLower();
-        }
-
-        private static string GetTimestamp()
-        {
-            var localTime = DateTime.Now;
-            var localTimeAndOffset = new DateTimeOffset(localTime, TimeZoneInfo.Local.GetUtcOffset(localTime));
-            var time = localTimeAndOffset.ToUnixTimeMilliseconds() * 1000000;
-            return time.ToString();
         }
     }
 }

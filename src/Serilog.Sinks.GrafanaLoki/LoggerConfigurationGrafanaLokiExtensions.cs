@@ -11,10 +11,6 @@ namespace Serilog.Sinks.GrafanaLoki
     /// <summary>Extends <see cref="LoggerConfiguration"/> with methods to add file sinks.</summary>
     public static class LoggerConfigurationGrafanaLokiExtensions
     {
-        public const string PostDataUri = "/loki/api/{0}/push";
-        public const string DefaultApiVersion = "v1";
-        public const string DefaultOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} | [{Level:u3}] | {Message:lj} | {Exception}";
-
         /// <summary>
         /// Send log events to Grafana's Loki.
         /// </summary>
@@ -55,7 +51,7 @@ namespace Serilog.Sinks.GrafanaLoki
             GrafanaLokiCredentials credentials = null,
             IEnumerable<GrafanaLokiLabel> labels = null,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            string outputTemplate = DefaultOutputTemplate,
+            string outputTemplate = Helpers.DefaultOutputTemplate,
             IFormatProvider formatProvider = null,
             IBatchFormatter batchFormatter = null,
             int batchPostingLimit = 1000,
@@ -112,14 +108,9 @@ namespace Serilog.Sinks.GrafanaLoki
             {
                 batchFormatter = labels == null ? new GrafanaLokiBatchFormatter() : new GrafanaLokiBatchFormatter(labels);
             }
-            var requestUri = BuildPostUri(url, apiVersion);
+            var requestUri = Helpers.BuildPostUri(url, apiVersion);
 
             return sinkConfiguration.Http(requestUri, batchPostingLimit, queueLimit, period, formatter, batchFormatter, restrictedToMinimumLevel, httpClient);
-        }
-
-        public static string BuildPostUri(string url, string apiVersion = null)
-        {
-            return string.Format("{0}{1}", url.TrimEnd('/'), string.Format(PostDataUri, apiVersion ?? DefaultApiVersion));
         }
     }
 }
