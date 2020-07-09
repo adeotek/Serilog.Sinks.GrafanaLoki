@@ -8,9 +8,14 @@ namespace Serilog.Sinks.GrafanaLoki
     public interface IGrafanaLokiHttpClient : IHttpClient
     {
         /// <summary>
-        /// Set basic authentification credentials.
+        /// Set basic authentication credentials.
         /// </summary>
         /// <param name="credentials">The GrafanaLokiCredentials instance.</param>
         void SetCredentials(GrafanaLokiCredentials credentials);
+
+        /// <summary>
+        /// DebugMode property.
+        /// </summary>
+        bool DebugMode { get; set; }
     }
 }

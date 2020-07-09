@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Serilog.Sinks.GrafanaLoki.Example
@@ -9,7 +10,9 @@ namespace Serilog.Sinks.GrafanaLoki.Example
         {
             var req = content.ReadAsStringAsync().Result;
             var response = await base.PostAsync(requestUri, content);
-            var body = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine($"StatusCode: {(int)response.StatusCode} - {response.ReasonPhrase}");
+            var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            Console.WriteLine($"Body: {body}");
             return response;
         }
     }

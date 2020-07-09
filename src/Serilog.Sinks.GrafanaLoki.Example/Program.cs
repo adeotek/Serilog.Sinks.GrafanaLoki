@@ -19,8 +19,8 @@ namespace Serilog.Sinks.GrafanaLoki.Example
 
             Log.Information("Logger started!");
 
-            int totalItems = 5;
-            for (int i = 0; i < totalItems; i++)
+            var totalItems = 5;
+            for (var i = 0; i < totalItems; i++)
             {
                 Log.Debug("Item {ItemIndex} of {TotalItems}", i + 1, totalItems);
                 Thread.Sleep(1000);
@@ -42,6 +42,8 @@ namespace Serilog.Sinks.GrafanaLoki.Example
             }
 
             Log.CloseAndFlush();
+
+            Console.ReadKey(true);
         }
 
         public static void SetLoggerFromConfiguration()

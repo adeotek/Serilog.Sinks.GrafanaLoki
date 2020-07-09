@@ -43,7 +43,9 @@ namespace Serilog.Sinks.GrafanaLoki
         /// The time to wait between checking for event batches. Default value is 2 seconds.
         /// </param>
         /// <param name="apiVersion">Loki API version, default "v1".</param>
-        /// <param name="httpClient">Custom HttpClient or null dor default (IHttpClient).</param>
+        /// <param name="httpClient">Custom HttpClient or null or default (IHttpClient).</param>
+        /// <param name="httpRequestTimeout">HttpRequest timeout where null is the default HttpClient timeout (default null).</param>
+        /// <param name="debugMode">Debug mod switch on/off.</param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration GrafanaLoki(
             this LoggerSinkConfiguration sinkConfiguration,
@@ -58,7 +60,9 @@ namespace Serilog.Sinks.GrafanaLoki
             int? queueLimit = null,
             TimeSpan? period = null,
             string apiVersion = null,
-            IGrafanaLokiHttpClient httpClient = null)
+            IGrafanaLokiHttpClient httpClient = null,
+            int? httpRequestTimeout = null,
+            bool debugMode = false)
         {
             if (sinkConfiguration == null)
             {
@@ -74,7 +78,7 @@ namespace Serilog.Sinks.GrafanaLoki
             }
 
             var formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
-            return ConfigureGrafanaLoki(sinkConfiguration, url, credentials, labels, restrictedToMinimumLevel, formatter, batchFormatter, batchPostingLimit, queueLimit, period, apiVersion, httpClient);
+            return ConfigureGrafanaLoki(sinkConfiguration, url, credentials, labels, restrictedToMinimumLevel, formatter, batchFormatter, batchPostingLimit, queueLimit, period, apiVersion, httpClient, httpRequestTimeout, debugMode);
         }
 
         private static LoggerConfiguration ConfigureGrafanaLoki(
@@ -89,7 +93,9 @@ namespace Serilog.Sinks.GrafanaLoki
             int? queueLimit,
             TimeSpan? period,
             string apiVersion,
-            IGrafanaLokiHttpClient httpClient)
+            IGrafanaLokiHttpClient httpClient,
+            int? httpRequestTimeout,
+            bool debugMode)
         {
             if (formatter == null)
             {
@@ -102,12 +108,13 @@ namespace Serilog.Sinks.GrafanaLoki
 
             if (httpClient == null)
             {
-                httpClient = new GrafanaLokiHttpClient(null, credentials);
+                httpClient = new GrafanaLokiHttpClient(null, credentials, httpRequestTimeout ?? -1);
             }
             else if (credentials != null)
             {
                 httpClient.SetCredentials(credentials);
             }
+            httpClient.DebugMode = debugMode;
             if (batchFormatter == null)
             {
                 batchFormatter = labels == null ? new GrafanaLokiBatchFormatter() : new GrafanaLokiBatchFormatter(labels);
