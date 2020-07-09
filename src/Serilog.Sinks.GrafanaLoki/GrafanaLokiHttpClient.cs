@@ -50,7 +50,28 @@ namespace Serilog.Sinks.GrafanaLoki
             {
                 content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
                 response = await HttpClient.PostAsync(requestUri, content);
-                if (DebugMode)
+                if (response.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    if (DebugMode)
+                    {
+                        Console.WriteLine($"GrafanaLoki sending data: {content.ReadAsStringAsync().GetAwaiter().GetResult()}");
+                        Console.WriteLine($"GrafanaLoki response StatusCode: {(int)response.StatusCode} - {response.ReasonPhrase}");
+                        if (response.StatusCode != HttpStatusCode.NoContent && response.StatusCode != HttpStatusCode.OK)
+                        {
+                            Console.WriteLine($"GrafanaLoki response body: {body}");
+                        }
+                    }
+                    if (body.Contains("error parsing labels:") || body.Contains("ignored, reason: 'entry out of order' for stream"))
+                    {
+                        Log.Warning("Bad request Loki response: {msg}", body);
+                        response.StatusCode = HttpStatusCode.OK;
+                        if (DebugMode)
+                        {
+                            Console.WriteLine($"GrafanaLoki error suppressed!!!");
+                        }
+                    }
+                } else if (DebugMode)
                 {
                     Console.WriteLine($"GrafanaLoki sending data: {content.ReadAsStringAsync().GetAwaiter().GetResult()}");
                     Console.WriteLine($"GrafanaLoki response StatusCode: {(int)response.StatusCode} - {response.ReasonPhrase}");

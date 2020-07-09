@@ -159,7 +159,9 @@ var logger = new LoggerConfiguration()
           ],
           "batchPostingLimit": 1000,
           "queueLimit": null,
-          "period": null
+          "period": null,
+          "httpRequestTimeout": -1,
+          "debugMode": false 
         }
       }
     ]
