@@ -1,4 +1,5 @@
-﻿using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
+﻿using Serilog.Sinks.GrafanaLoki.Common;
+using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
 using Shouldly;
 using Xunit;
 
@@ -17,7 +18,7 @@ public class AuthTests : IClassFixture<HttpClientTestFixture>
     public void BasicAuthHeaderIsCorrect()
     {
         // Arrange
-        var credentials = new GrafanaLokiCredentials() { User = "<user>", Password = "<password>" };
+        var credentials = new GrafanaLokiCredentials { User = "<user>", Password = "<password>" };
         var log = new LoggerConfiguration()
             .MinimumLevel.Information()
             .WriteTo.GrafanaLoki("http://test:80", credentials, httpClient: _client)
@@ -31,7 +32,7 @@ public class AuthTests : IClassFixture<HttpClientTestFixture>
         var auth = _client.Client.DefaultRequestHeaders.Authorization;
         auth.ShouldSatisfyAllConditions(
             () => auth?.Scheme.ShouldBe("Basic"),
-            () => auth?.Parameter.ShouldBe("PHVzZXI+OjxwYXNzd29yZD4=")
+            () => auth?.Parameter.ShouldBe(Helpers.Base64Encode($"{credentials.User}:{credentials.Password}"))
         );
     }
 
