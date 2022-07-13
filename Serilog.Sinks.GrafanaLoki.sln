@@ -3,16 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.GrafanaLoki", "src\Serilog.Sinks.GrafanaLoki\Serilog.Sinks.GrafanaLoki.csproj", "{714B9EBE-97DB-4AA8-85B6-BB694F663FD8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.GrafanaLoki", "src\Serilog.Sinks.GrafanaLoki.csproj", "{714B9EBE-97DB-4AA8-85B6-BB694F663FD8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.GrafanaLoki.Example", "src\Serilog.Sinks.GrafanaLoki.Example\Serilog.Sinks.GrafanaLoki.Example.csproj", "{0527CC04-6C96-449E-9906-87312411C494}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.GrafanaLoki.Sample", "sample\Serilog.Sinks.GrafanaLoki.Sample.csproj", "{0527CC04-6C96-449E-9906-87312411C494}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0443AB84-4AD0-48BA-AEA2-F4DA0E4BEED9}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.GrafanaLoki.Tests", "test\Serilog.Sinks.GrafanaLoki.Tests\Serilog.Sinks.GrafanaLoki.Tests.csproj", "{8463738F-33EA-47B4-A9D4-293A0A9A3AB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Sinks.GrafanaLoki.Tests", "tests\Serilog.Sinks.GrafanaLoki.Tests.csproj", "{8463738F-33EA-47B4-A9D4-293A0A9A3AB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -12,10 +12,12 @@ You can find more information about what Loki is over on [Grafana's website here
 
 ## Features:
 
+- Timestamps precision at 100ns (lower risk of collision between log entries)
 - Uses the new Loki HTTP API
 - Serilog.Settings.Configuration integration (configure sink via configuration file, JSON sample provided in Example project)
-- Global and contextual labels support 
-- Logs are send to Loki via HTTP using Serilog.Sinks.Http package (batch support included)
+- Global and contextual labels support
+- Log entries are grouped in Streams by log level and other contextual labels
+- Logs are send to Loki in batches via HTTP using internal client
 - Customizable HTTP client
 
 
@@ -49,7 +51,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.GrafanaLoki(
         "http://localhost:3100",
         credentials,
-        new List<GrafanaLokiLabel>() { new GrafanaLokiLabel() { Key = "app", Value = "Serilog.Sinks.GrafanaLoki.Example" } }, // Global labels
+        new Dictionary<string, string>() { { "app", "Serilog.Sinks.GrafanaLoki.Sample" } }, // Global labels
         Events.LogEventLevel.Debug
     )
     .CreateLogger();
@@ -75,19 +77,20 @@ using (LogContext.PushProperty("ALabel", "ALabelValue"))
 
 ### Custom HTTP Client
 
-Serilog.Loki.GrafanaLoki is built on top of the popular [Serilog.Sinks.Http](https://github.com/FantasticFiasco/serilog-sinks-http) library to post log entries to Loki.
-In order to use a custom HttpClient you can extend the default HttpClient (`Serilog.Sinks.GrafanaLoki.GrafanaLokiHttpClient`), or create one from scratch by implementing `Serilog.Sinks.GrafanaLoki.IGrafanaLokiHttpClient` (which extends `Serilog.Sinks.Http.IHttpClient`).
+Serilog.Loki.GrafanaLoki uses by default the internal HTTP Client, but you can customize it by implementing the `Serilog.Sinks.GrafanaLoki.Common.IHttpClient` interface or by extending the `Serilog.Sinks.GrafanaLoki.GrafanaLokiHttpClient` class.
 
 ```csharp
 // CustomHttpClient.cs
 
 public class CustomHttpClient : GrafanaLokiHttpClient
 {
-    public override async Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+    public override async Task<HttpResponseMessage> PostAsync(string requestUri, Stream contentStream)
     {
-        var req = content.ReadAsStringAsync().Result;
-        var response = await base.PostAsync(requestUri, content);
-        var body = response.Content.ReadAsStringAsync().Result;
+        using var content = new StreamContent(contentStream);
+        content.Headers.Add("Content-Type", "application/json");
+        var response = await HttpClient
+            .PostAsync(requestUri, content)
+            .ConfigureAwait(false);
         return response;
     }
 }
@@ -157,18 +160,19 @@ var logger = new LoggerConfiguration()
               "value": "Serilog.Sinks.GrafanaLoki.Example"
             }
           ],
-          "batchPostingLimit": 1000,
-          "queueLimit": null,
+          "logEventsInBatchLimit": 1000,
+          "queueLimitBytes": null,
+          "logEventLimitBytes": null,
           "period": null,
-          "httpRequestTimeout": -1,
-          "debugMode": false 
+          "httpRequestTimeout": 3000,
+          "debugMode": false
         }
       }
     ]
   }
 }
 ```
-Excepting the ``Url``, all configuration options are optional.
+Excepting the ``Url``, all configuration items are optional.
 
 
 ### Inspiration and Credits

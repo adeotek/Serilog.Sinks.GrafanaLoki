@@ -1,0 +1,1 @@
+﻿{"streams":[{"stream":{"level":"error"},"values":[["<unixtimestamp>","Something's wrong"]]},{"stream":{"level":"warning"},"values":[["<unixtimestamp>","Something else is wrong"],["<unixtimestamp>","Another thing went almost wrong (special char <&test'>)"]]}]}
