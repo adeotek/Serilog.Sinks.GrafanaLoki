@@ -65,7 +65,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
 
         var writer = new StringWriter();
         _textFormatter.Format(logEvent, writer);
-        var entry = new LogEventEntry(writer.ToString());
+        var entry = new LogEventEntry(writer.ToString(), logEvent.Timestamp);
 
         if (entry.GetByteSize() > _logEventLimitBytes)
         {
@@ -77,7 +77,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         }
 
         // Add LogEvent Labels
-        entry.Labels.Add("Level", GetLevel(logEvent.Level));
+        entry.Labels.Add(GrafanaLokiHelpers.LogLevelLabelName, logEvent.Level.ToGrafanaString());
         foreach (var property in logEvent.Properties)
         {
             // Some enrichers pass strings with quotes surrounding the values inside the string,
@@ -185,7 +185,4 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
             }
         }
     }
-
-    private static string GetLevel(LogEventLevel level)
-        => level == LogEventLevel.Information ? "info" : level.ToString().ToLower();
 }

@@ -35,26 +35,26 @@ public class BatchFormatter : IBatchFormatter
         }
 
         var batch = new LogsBatch();
-        foreach (var logEvent in logEventsArray)
+        foreach (var group in logEventsArray
+                     .Where(e => !string.IsNullOrWhiteSpace(e.Message))
+                     .GroupBy(
+                         e => e.Labels,
+                         e => e,
+                         DictionaryComparer<string, string>.Instance))
         {
-            if (string.IsNullOrEmpty(logEvent.Message))
-            {
-                continue;
-            }
-
             var stream = batch.CreateStream();
-
             foreach (var item in _globalLabels)
             {
                 stream.Labels.AddOrReplace(item.Key, item.Value);
             }
-
-            foreach (var item in logEvent.Labels)
+            foreach (var label in group.Key)
             {
-                stream.Labels.AddOrReplace(item.Key, item.Value);
+                stream.Labels.AddOrAppend(label.Key, label.Value);
             }
-
-            stream.Entries.AddOrAppend(Helpers.GetUnixTimestamp(), logEvent.Message.TrimEnd('\r', '\n'));
+            foreach (var entry in group.OrderBy(e => e.Timestamp))
+            {
+                stream.Entries.AddOrAppend(entry.Timestamp.ToString(), entry.Message.TrimEnd('\r', '\n'));
+            }
         }
 
         if (batch.Streams.Count > 0)

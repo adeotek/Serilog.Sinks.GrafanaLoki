@@ -43,6 +43,7 @@ public class PostContent : IClassFixture<HttpClientTestFixture>
         // Act
         log.Error("Something's wrong");
         log.Warning("Something else is wrong");
+        log.Warning("Another thing went almost wrong (special char <&test'>)");
         log.Dispose();
 
         // Assert

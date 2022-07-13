@@ -74,7 +74,7 @@ public static class LoggerConfigurationGrafanaLokiExtensions
         GrafanaLokiCredentials? credentials = null,
         Dictionary<string, string>? labels = null,
         LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-        string outputTemplate = Helpers.DefaultOutputTemplate,
+        string outputTemplate = GrafanaLokiHelpers.DefaultOutputTemplate,
         IFormatProvider? formatProvider = null,
         IBatchFormatter? batchFormatter = null,
         long? queueLimitBytes = null,
@@ -103,7 +103,7 @@ public static class LoggerConfigurationGrafanaLokiExtensions
         // Default values
         logEventsInBatchLimit ??= 1000;
         period ??= TimeSpan.FromSeconds(2);
-        var requestUri = Helpers.BuildPostUri(url, apiVersion);
+        var requestUri = GrafanaLokiHelpers.BuildPostUri(url, apiVersion);
         var textFormatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
         batchFormatter ??= new BatchFormatter(labels);
         if (httpClient == null)

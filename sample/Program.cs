@@ -70,7 +70,7 @@ static class Program
                     { "Application", "Serilog.Sinks.GrafanaLoki.Sample" }
                 },
                 Events.LogEventLevel.Debug,
-                Helpers.DefaultOutputTemplate,
+                GrafanaLokiHelpers.DefaultOutputTemplate,
                 null,
                 null,
                 null,

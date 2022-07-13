@@ -26,6 +26,10 @@ internal class LogsBatch
         {
             Encoder = JavaScriptEncoder.Create(encoderSettings),
             WriteIndented = false
-        });
+        })
+            .Replace("\\u0027", "'")
+            .Replace("\\u003C", "<")
+            .Replace("\\u003E", ">")
+            .Replace("\\u0026", "&");
     }
 }

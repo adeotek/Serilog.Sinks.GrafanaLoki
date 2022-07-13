@@ -30,6 +30,6 @@ public class RequestUriTests
         log.Dispose();
 
         // Assert
-        _client.RequestUri.ShouldBe(Helpers.BuildPostUri(url));
+        _client.RequestUri.ShouldBe(GrafanaLokiHelpers.BuildPostUri(url));
     }
 }
