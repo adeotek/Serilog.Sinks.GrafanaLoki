@@ -16,7 +16,7 @@
     <Version>1.1.0</Version>
     <PackageId>Serilog.Sinks.GrafanaLoki</PackageId>
     <PackageTags>loki,grafana,serilog,sinks</PackageTags>
-    <PackageProjectUrl>https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/</PackageProjectUrl>
+    <PackageProjectUrl>https://adeotek.github.io/Serilog.Sinks.GrafanaLoki/</PackageProjectUrl>
     <PackageLicense>https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/blob/master/LICENSE</PackageLicense>
     <RepositoryUrl>https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
