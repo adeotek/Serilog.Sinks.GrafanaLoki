@@ -12,7 +12,6 @@ namespace Serilog.Sinks.GrafanaLoki
     public class GrafanaLokiHttpClient : IHttpClient
     {
         private const string JsonContentType = "application/json";
-
         protected readonly HttpClient HttpClient;
 
         public GrafanaLokiHttpClient(HttpClient? httpClient = null, GrafanaLokiCredentials? credentials = null, int httpTimeout = -1)
