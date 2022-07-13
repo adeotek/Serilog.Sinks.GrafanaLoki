@@ -40,17 +40,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../LICENSE">
+    <None Include="../LICENSE">
       <Pack>True</Pack>
       <PackagePath>/</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="../../assets/PackageIcon.png">
+    <None Include="../assets/PackageIcon.png">
       <Pack>True</Pack>
       <PackagePath>/</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="../../README.md">
+    <None Include="../README.md">
       <Pack>True</Pack>
       <PackagePath>/</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
