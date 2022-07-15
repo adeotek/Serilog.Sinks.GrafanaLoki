@@ -11,9 +11,9 @@
     <Authors>George Benjamin-Schonberger</Authors>
     <Company>George Benjamin-Schonberger</Company>
     <Copyright>George Benjamin-Schonberger 2022</Copyright>
-    <AssemblyVersion>1.1.0.8</AssemblyVersion>
-    <FileVersion>1.1.0.8</FileVersion>
-    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.1.9</AssemblyVersion>
+    <FileVersion>1.1.1.9</FileVersion>
+    <Version>1.1.1</Version>
     <PackageId>Serilog.Sinks.GrafanaLoki</PackageId>
     <PackageTags>loki,grafana,serilog,sinks</PackageTags>
     <PackageProjectUrl>https://adeotek.github.io/Serilog.Sinks.GrafanaLoki/</PackageProjectUrl>
@@ -23,7 +23,7 @@
     <PackageIcon>PackageIcon.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageVersion>1.1.0</PackageVersion>
+    <PackageVersion>1.1.1</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>

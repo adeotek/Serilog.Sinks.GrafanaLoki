@@ -29,7 +29,7 @@ public static class UnixTimestamp
 
     private const long UnixEpochTicks = DaysTo1970 * TicksPerDay;
 
-    public static long GetUnixNanoSeconds(DateTimeOffset timestamp) => (timestamp.Ticks - UnixEpochTicks) * NanosecondsPerTick;
+    public static long GetUnixNanoSeconds(DateTimeOffset timestamp) => (timestamp.UtcTicks - UnixEpochTicks) * NanosecondsPerTick;
 
     public static string GetUnixTimestamp(DateTime? dateTime = null)
     {
