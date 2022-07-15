@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Serilog.Context;
-using Serilog.Sinks.GrafanaLoki.Common;
 
 namespace Serilog.Sinks.GrafanaLoki.Sample;
 

@@ -137,39 +137,32 @@ var logger = new LoggerConfiguration()
 `appsettings.json` configuration sample:
 ```json
 {
-  "Serilog": {
-    "WriteTo": [
-      {
-        "Name": "GrafanaLoki",
-        "Args": {
-          "Url": "http://localhost:3100",
-          "Credentials": {
-            "User": "",
-            "Password": ""
-          },
-          "restrictedToMinimumLevel": "Debug",
-          "outputTemplate": "{Timestamp:HH:mm:ss} | {Level:u3} | {Message:lj} | {Exception:1}",
-          "Labels": [
+    "Serilog": {
+        "WriteTo": [
             {
-
-              "Key": "project",
-              "Value": "Serilog.Sinks.GrafanaLoki"
-            },
-            {
-              "Key": "app",
-              "value": "Serilog.Sinks.GrafanaLoki.Example"
+                "Name": "GrafanaLoki",
+                "Args": {
+                    "Url": "http://localhost:3100",
+                    "Credentials": {
+                        "User": "<username>",
+                        "Password": "<password>"
+                    },
+                    "Labels": {
+                        "project": "Serilog.Sinks.GrafanaLoki",
+                        "app": "Serilog.Sinks.GrafanaLoki.Sample"
+                    },
+                    "restrictedToMinimumLevel": "Debug",
+                    "outputTemplate": "{Timestamp:HH:mm:ss} [{Level:u3}] | {Message:lj} | {Exception:1}",
+                    "logEventsInBatchLimit": 1000,
+                    "queueLimitBytes": null,
+                    "logEventLimitBytes": null,
+                    "period": null,
+                    "httpRequestTimeout": 3000,
+                    "debugMode": true
+                }
             }
-          ],
-          "logEventsInBatchLimit": 1000,
-          "queueLimitBytes": null,
-          "logEventLimitBytes": null,
-          "period": null,
-          "httpRequestTimeout": 3000,
-          "debugMode": false
-        }
-      }
-    ]
-  }
+        ]
+    }
 }
 ```
 Excepting the ``Url``, all configuration items are optional.
