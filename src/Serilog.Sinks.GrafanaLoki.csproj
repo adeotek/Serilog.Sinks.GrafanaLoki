@@ -11,8 +11,8 @@
     <Authors>George Benjamin-Schonberger</Authors>
     <Company>George Benjamin-Schonberger</Company>
     <Copyright>George Benjamin-Schonberger 2022</Copyright>
-    <AssemblyVersion>1.1.2.10</AssemblyVersion>
-    <FileVersion>1.1.2.10</FileVersion>
+    <AssemblyVersion>1.1.2.11</AssemblyVersion>
+    <FileVersion>1.1.2.11</FileVersion>
     <Version>1.1.2</Version>
     <PackageId>Serilog.Sinks.GrafanaLoki</PackageId>
     <PackageTags>loki,grafana,serilog,sinks</PackageTags>

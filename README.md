@@ -153,6 +153,7 @@ var logger = new LoggerConfiguration()
                     },
                     "restrictedToMinimumLevel": "Debug",
                     "outputTemplate": "{Timestamp:HH:mm:ss} [{Level:u3}] | {Message:lj} | {Exception:1}",
+                    "propertiesStringDelimiter": null,
                     "logEventsInBatchLimit": 1000,
                     "queueLimitBytes": null,
                     "logEventLimitBytes": null,

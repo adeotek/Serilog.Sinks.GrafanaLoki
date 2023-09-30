@@ -7,12 +7,7 @@ namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
 
 public class PostContent : IClassFixture<HttpClientTestFixture>
 {
-    private readonly TestHttpClient _client;
-
-    public PostContent()
-    {
-        _client = new TestHttpClient();
-    }
+    private readonly TestHttpClient _client = new();
 
     [Fact]
     public void ContentMatchesApproved()

@@ -25,8 +25,8 @@ public static class LoggerConfigurationGrafanaLokiExtensions
     /// A message template describing the format used to write to the sink.
     /// The default is "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} | [{Level:u3}] | {Message:lj} | {Exception}".
     /// </param>
-    /// <param name="propertiesDelimiter">
-    /// A delimiter used for event properties. The default values is ` (backtick).
+    /// <param name="propertiesStringDelimiter">
+    /// A delimiter used for event string properties. The default values is ` (backtick).
     /// </param>
     /// <param name="formatProvider">
     /// Supplies culture-specific formatting information, or null.
@@ -79,7 +79,7 @@ public static class LoggerConfigurationGrafanaLokiExtensions
         Dictionary<string, string>? labels = null,
         LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
         string outputTemplate = GrafanaLokiHelpers.DefaultOutputTemplate,
-        string? propertiesDelimiter = null,
+        string? propertiesStringDelimiter = null,
         IFormatProvider? formatProvider = null,
         IBatchFormatter? batchFormatter = null,
         long? queueLimitBytes = null,
@@ -128,7 +128,7 @@ public static class LoggerConfigurationGrafanaLokiExtensions
             logEventsInBatchLimit,
             batchSizeLimitBytes,
             period.Value,
-            propertiesDelimiter,
+            propertiesStringDelimiter,
             textFormatter,
             batchFormatter,
             httpClient);
