@@ -1,7 +1,7 @@
 # Serilog.Sinks.GrafanaLoki
 A Serilog Sink for Grafana's [Loki Log Aggregator](https://grafana.com/loki).
 
-![.NET Core](https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/workflows/.NET%20Core/badge.svg?branch=main)
+[![.NET build](https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/actions/workflows/dotnet_build.yml/badge.svg)](https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/actions/workflows/dotnet_build.yml)
 
 What is Loki?
 
