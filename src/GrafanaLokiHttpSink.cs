@@ -20,6 +20,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
     private readonly int? _logEventsInBatchLimit;
     private readonly long? _batchSizeLimitBytes;
     private readonly ITextFormatter _textFormatter;
+    private readonly string? _propertiesDelimiter;
     private readonly IBatchFormatter _batchFormatter;
     private readonly IHttpClient _httpClient;
     private readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
@@ -37,6 +38,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         int? logEventsInBatchLimit,
         long? batchSizeLimitBytes,
         TimeSpan period,
+        string? propertiesDelimiter,
         ITextFormatter textFormatter,
         IBatchFormatter batchFormatter,
         IHttpClient httpClient)
@@ -46,6 +48,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         _logEventsInBatchLimit = logEventsInBatchLimit;
         _batchSizeLimitBytes = batchSizeLimitBytes;
         _textFormatter = textFormatter ?? throw new ArgumentNullException(nameof(textFormatter));
+        _propertiesDelimiter = propertiesDelimiter;
         _batchFormatter = batchFormatter ?? throw new ArgumentNullException(nameof(batchFormatter));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
@@ -83,7 +86,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
             // Some enrichers pass strings with quotes surrounding the values inside the string,
             // which results in redundant quotes after serialization and a "bad request" response.
             // To avoid this, replace all quotes from the value.
-            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", "`"));
+            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", _propertiesDelimiter ?? "`"));
         }
 
         var result = _queue.TryEnqueue(entry);
