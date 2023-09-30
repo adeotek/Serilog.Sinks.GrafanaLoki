@@ -21,7 +21,7 @@ jobs:
         run: dotnet build --no-restore
       - name: Test
         run: dotnet test --no-build --verbosity normal
-      - uses: bbonkr/get-version-action@v1.0.4
+      - uses: bbonkr/get-version-action@v1
         id: get_version
         with:
           project: "src/Serilog.Sinks.GrafanaLoki.csproj"
