@@ -1,7 +1,7 @@
 # Serilog.Sinks.GrafanaLoki
 A Serilog Sink for Grafana's [Loki Log Aggregator](https://grafana.com/loki).
 
-![.NET Core](https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/workflows/.NET%20Core/badge.svg?branch=master)
+![.NET Core](https://github.com/adeotek/Serilog.Sinks.GrafanaLoki/workflows/.NET%20Core/badge.svg?branch=main)
 
 What is Loki?
 
@@ -153,6 +153,7 @@ var logger = new LoggerConfiguration()
                     },
                     "restrictedToMinimumLevel": "Debug",
                     "outputTemplate": "{Timestamp:HH:mm:ss} [{Level:u3}] | {Message:lj} | {Exception:1}",
+                    "propertiesStringDelimiter": null,
                     "logEventsInBatchLimit": 1000,
                     "queueLimitBytes": null,
                     "logEventLimitBytes": null,

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
     private readonly int? _logEventsInBatchLimit;
     private readonly long? _batchSizeLimitBytes;
     private readonly ITextFormatter _textFormatter;
+    private readonly string? _propertiesStringDelimiter;
     private readonly IBatchFormatter _batchFormatter;
     private readonly IHttpClient _httpClient;
     private readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
@@ -37,6 +39,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         int? logEventsInBatchLimit,
         long? batchSizeLimitBytes,
         TimeSpan period,
+        string? propertiesStringDelimiter,
         ITextFormatter textFormatter,
         IBatchFormatter batchFormatter,
         IHttpClient httpClient)
@@ -46,6 +49,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         _logEventsInBatchLimit = logEventsInBatchLimit;
         _batchSizeLimitBytes = batchSizeLimitBytes;
         _textFormatter = textFormatter ?? throw new ArgumentNullException(nameof(textFormatter));
+        _propertiesStringDelimiter = propertiesStringDelimiter;
         _batchFormatter = batchFormatter ?? throw new ArgumentNullException(nameof(batchFormatter));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
@@ -83,7 +87,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
             // Some enrichers pass strings with quotes surrounding the values inside the string,
             // which results in redundant quotes after serialization and a "bad request" response.
             // To avoid this, replace all quotes from the value.
-            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", "`"));
+            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", _propertiesStringDelimiter ?? "`"));
         }
 
         var result = _queue.TryEnqueue(entry);
@@ -153,11 +157,20 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
                     else
                     {
                         _connectionSchedule.MarkFailure();
-                        _unsentBatch = batch;
+                        // Discard failed batch based on the StatusCode
+                        if (response.StatusCode == HttpStatusCode.BadRequest)
+                        {
+                            _unsentBatch = null;
+                            SelfLog.WriteLine("Batch discarded as this is not a retryable error!");
+                        }
+                        else
+                        {
+                            _unsentBatch = batch;
+                            SelfLog.WriteLine("Batch marked as unsent (to be retried)");
+                        }
 
-                        var statusCode = response.StatusCode;
                         var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", statusCode, body);
+                        SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", response.StatusCode, body);
                         break;
                     }
                 }
