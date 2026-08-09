@@ -106,6 +106,22 @@ public class GrafanaLokiHttpClientTests
     }
 
     [Fact]
+    public void UseGzipCompression_DefaultsToFalse()
+    {
+        using var client = new GrafanaLokiHttpClient();
+
+        Assert.False(client.UseGzipCompression);
+    }
+
+    [Fact]
+    public void UseGzipCompression_CanBeSet()
+    {
+        using var client = new GrafanaLokiHttpClient { UseGzipCompression = true };
+
+        Assert.True(client.UseGzipCompression);
+    }
+
+    [Fact]
     public void PostAsync_WithValidUrl_DoesNotThrow()
     {
         // This test verifies construction works — actual POST requires a running server
