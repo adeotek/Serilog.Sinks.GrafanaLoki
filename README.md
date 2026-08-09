@@ -96,6 +96,53 @@ When a log event includes an exception, two optional labels can be attached to t
 Both flags can also be configured via `appsettings.json` (see the configuration sample below).
 
 
+### Structured Metadata (Loki 3.0+)
+
+Loki 3.0 introduced [structured metadata](https://grafana.com/docs/loki/latest/get-started/labels/structured-metadata/) — a way to attach metadata to log lines without indexing them as labels. This is recommended for high-cardinality properties that should not be used as labels.
+
+When `useStructuredMetadata` is enabled, all log event properties are sent as structured metadata instead of labels. The `level`, `exception_type`, and `exception` labels (if enabled) remain as labels. Global labels also remain as labels.
+
+```csharp
+.WriteTo.GrafanaLoki(
+    "http://localhost:3100",
+    useStructuredMetadata: true   // default: false
+)
+```
+
+Structured metadata can also be configured via `appsettings.json`.
+
+> **Note:** Structured metadata requires Loki 3.0+ with `allow_structured_metadata: true` and schema version `v13` or higher.
+
+
+### Label Limit Safeguard
+
+Loki 3.0 defaults to a maximum of 15 labels per series (down from 30). Use `maxLabelCount` to enforce a label limit and prevent Loki from rejecting log entries with too many labels.
+
+When the label count exceeds the limit, excess property labels are dropped with a `SelfLog` warning. If `useStructuredMetadata` is also enabled, excess labels are moved to structured metadata instead of being dropped.
+
+```csharp
+.WriteTo.GrafanaLoki(
+    "http://localhost:3100",
+    maxLabelCount: 15,             // default: null (no limit)
+    useStructuredMetadata: true    // recommended: excess labels moved to metadata
+)
+```
+
+
+### Gzip Compression
+
+Enable gzip compression to reduce bandwidth when sending log data to Loki. Loki supports `Content-Encoding: gzip` on the push endpoint.
+
+```csharp
+.WriteTo.GrafanaLoki(
+    "http://localhost:3100",
+    useGzipCompression: true   // default: false
+)
+```
+
+> **Note:** Gzip compression applies only to the default `GrafanaLokiHttpClient`. Custom `IHttpClient` implementations must handle compression themselves.
+
+
 ### Custom HTTP Client
 
 Serilog.Loki.GrafanaLoki uses by default the internal HTTP Client, but you can customize it by implementing the `Serilog.Sinks.GrafanaLoki.Common.IHttpClient` interface or by extending the `Serilog.Sinks.GrafanaLoki.GrafanaLokiHttpClient` class.
