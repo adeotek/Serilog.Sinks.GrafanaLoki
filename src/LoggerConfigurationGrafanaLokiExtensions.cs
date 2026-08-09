@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Serilog.Configuration;
+using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using Serilog.Sinks.GrafanaLoki.Common;
@@ -136,6 +137,10 @@ public static class LoggerConfigurationGrafanaLokiExtensions
         if (httpClient is GrafanaLokiHttpClient grafanaLokiHttpClient)
         {
             grafanaLokiHttpClient.UseGzipCompression = useGzipCompression;
+        }
+        else if (useGzipCompression)
+        {
+            SelfLog.WriteLine("useGzipCompression is set to true but the provided HTTP client is not a GrafanaLokiHttpClient; compression will not be applied");
         }
 
         var sink = new GrafanaLokiHttpSink(

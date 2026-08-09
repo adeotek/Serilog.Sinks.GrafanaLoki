@@ -229,7 +229,10 @@ var logger = new LoggerConfiguration()
                     "httpRequestTimeout": 3000,
                     "debugMode": true,
                     "exceptionTypeAsLabel": true,
-                    "exceptionAsLabel": false
+                    "exceptionAsLabel": false,
+                    "useStructuredMetadata": false,
+                    "maxLabelCount": null,
+                    "useGzipCompression": false
                 }
             }
         ]
