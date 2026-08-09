@@ -6,6 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: production
 
     # 1. Grant write permission for the OIDC id-token
     permissions:
