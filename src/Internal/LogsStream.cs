@@ -10,9 +10,17 @@ internal class LogsStream
     public Dictionary<string, string> Labels { get; } = new ();
 
     [JsonIgnore]
-    public Dictionary<string, string> Entries { get; } = new ();
+    public List<StreamEntry> Entries { get; } = new ();
 
     [JsonPropertyName("values")]
-    public List<List<string>> Values
-        => Entries.Select(item => new List<string> { item.Key, item.Value }).ToList();
+    public List<List<object>> Values
+        => Entries.Select(entry =>
+        {
+            var values = new List<object> { entry.Timestamp, entry.Message };
+            if (entry.Metadata is { Count: > 0 })
+            {
+                values.Add(entry.Metadata);
+            }
+            return values;
+        }).ToList();
 }
