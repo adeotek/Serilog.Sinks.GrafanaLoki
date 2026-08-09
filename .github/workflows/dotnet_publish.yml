@@ -5,8 +5,12 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    # 1. Grant write permission for the OIDC id-token
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +30,12 @@ jobs:
         id: get_version
         with:
           project: "src/Serilog.Sinks.GrafanaLoki.csproj"
-      - name: Publish to NuGet.org
-        run: dotnet nuget push --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.NUGET_API_KEY}} ./Serilog.Sinks.GrafanaLoki.${{steps.get_version.outputs.version}}.nupkg
+      - name: NuGet Login
+        uses: NuGet/login@v1
+        id: nuget_login
+        with:
+          user: 'adeotek'
 
+      # 3. Use the dynamic output token instead of ${{ secrets.NUGET_API_KEY }}
+      - name: Publish to NuGet.org
+        run: dotnet nuget push --source "https://api.nuget.org/v3/index.json" --api-key ${{ steps.nuget_login.outputs.token }} ./Serilog.Sinks.GrafanaLoki.${{ steps.get_version.outputs.version }}.nupkg
