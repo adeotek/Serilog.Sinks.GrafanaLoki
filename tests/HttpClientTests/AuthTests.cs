@@ -1,11 +1,10 @@
 ﻿using Serilog.Sinks.GrafanaLoki.Common;
-using Serilog.Sinks.GrafanaLoki.Tests.Fixtures;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
 
-public class AuthTests : IClassFixture<HttpClientTestFixture>
+public class AuthTests
 {
     private readonly TestHttpClient _client;
 

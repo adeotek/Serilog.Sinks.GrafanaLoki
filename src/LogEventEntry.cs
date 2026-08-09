@@ -8,7 +8,7 @@ namespace Serilog.Sinks.GrafanaLoki;
 public struct LogEventEntry
 {
     private long _size = -1;
-    private int _labelsCount = 0;
+    private int _labelsCount = -1;
 
     public long Timestamp { get; }
     public string Message { get; }

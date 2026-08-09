@@ -19,11 +19,6 @@ internal class DictionaryComparer<TKey, TValue> : IEqualityComparer<IDictionary<
             return false;
         }
 
-        if (x.GetType() != y.GetType())
-        {
-            return false;
-        }
-
         return x.Count == y.Count && x.All(kvp =>
             y.TryGetValue(kvp.Key, out var value)
             && EqualityComparer<TValue>.Default.Equals(kvp.Value, value));

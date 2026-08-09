@@ -1,11 +1,10 @@
 using System.Text.Json;
-using Serilog.Sinks.GrafanaLoki.Tests.Fixtures;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
 
-public class ExceptionLabels : IClassFixture<HttpClientTestFixture>
+public class ExceptionLabels
 {
     [Fact]
     public void Default_IncludesExceptionType_ExcludesException()

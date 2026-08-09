@@ -29,7 +29,7 @@ internal class LogEventsQueue
         var result = TryEnqueue(logEvent);
         if (result != EnqueueResult.Ok)
         {
-            throw new Exception($"Enqueue log event failed: {result}");
+            throw new InvalidOperationException($"Enqueue log event failed: {result}");
         }
     }
 

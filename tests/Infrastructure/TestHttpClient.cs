@@ -14,7 +14,7 @@ public class TestHttpClient : GrafanaLokiHttpClient
 
     public HttpClient Client => HttpClient;
 
-    public string Content;
+    public string Content { get; set; } = string.Empty;
 
-    public string RequestUri;
+    public string RequestUri { get; set; } = string.Empty;
 }

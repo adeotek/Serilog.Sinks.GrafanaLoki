@@ -1,11 +1,10 @@
 ﻿using System.Text.RegularExpressions;
-using Serilog.Sinks.GrafanaLoki.Tests.Fixtures;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
 
-public class PostContent : IClassFixture<HttpClientTestFixture>
+public class PostContent
 {
     private readonly TestHttpClient _client = new();
 

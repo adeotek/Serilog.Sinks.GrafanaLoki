@@ -25,11 +25,6 @@ public class GrafanaLokiHttpClient : IHttpClient
         SetCredentials(credentials);
     }
 
-    ~GrafanaLokiHttpClient()
-    {
-        Dispose(false);
-    }
-
     /// <inheritdoc />
     public bool DebugMode { get; set; }
 
@@ -109,7 +104,6 @@ public class GrafanaLokiHttpClient : IHttpClient
     public void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)

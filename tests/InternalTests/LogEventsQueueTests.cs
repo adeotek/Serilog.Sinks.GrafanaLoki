@@ -54,7 +54,7 @@ public class LogEventsQueueTests
         entry.Labels.Add("key1", "value1");
         entry.Labels.Add("key2", "value2");
 
-        Assert.Throws<Exception>(() => queue.Enqueue(entry));
+        Assert.Throws<InvalidOperationException>(() => queue.Enqueue(entry));
     }
 
     [Fact]
@@ -99,9 +99,6 @@ public class LogEventsQueueTests
     {
         var queue = new LogEventsQueue();
         var entry = new LogEventEntry("Test message");
-        // Add a label to ensure GetByteSize() properly recalculates size;
-        // without labels the cached _size sentinel value (-1) causes the check to pass incorrectly.
-        entry.Labels.Add("key", "value");
         queue.TryEnqueue(entry);
 
         var result = queue.TryDequeue(1, out var logEvent); // 1 byte max
