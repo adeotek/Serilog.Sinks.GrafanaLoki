@@ -82,6 +82,10 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
 
         // Add LogEvent Labels
         entry.Labels.Add(GrafanaLokiHelpers.LogLevelLabelName, logEvent.Level.ToGrafanaString());
+        if (logEvent.Exception != null)
+        {
+            entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionLabelName, logEvent.Exception.ToString().Replace("\"", _propertiesStringDelimiter ?? "`"));
+        }
         foreach (var property in logEvent.Properties)
         {
             // Some enrichers pass strings with quotes surrounding the values inside the string,
