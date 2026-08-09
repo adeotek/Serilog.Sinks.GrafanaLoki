@@ -155,6 +155,38 @@ public class BatchFormatterTests
         Assert.Contains("overrideoriginal", json);
     }
 
+    [Fact]
+    public void Format_IncludesStructuredMetadata_WhenEntryHasMetadata()
+    {
+        var formatter = new BatchFormatter();
+        using var writer = new StringWriter();
+        var entry = new LogEventEntry("Test message");
+        entry.Labels.Add("level", "info");
+        entry.Metadata.Add("trace_id", "abc123");
+
+        formatter.Format(new[] { entry }, writer);
+
+        var json = writer.ToString();
+        Assert.Contains("\"trace_id\":\"abc123\"", json);
+    }
+
+    [Fact]
+    public void Format_OmitsMetadataObject_WhenEntryHasNoMetadata()
+    {
+        var formatter = new BatchFormatter();
+        using var writer = new StringWriter();
+        var entry = new LogEventEntry("Test message");
+        entry.Labels.Add("level", "info");
+
+        formatter.Format(new[] { entry }, writer);
+
+        var json = writer.ToString();
+        // Without metadata, the values entry should be [["ts","msg"]]
+        // With metadata, it would be [["ts","msg",{"key":"val"}]]
+        // So "msg" should be immediately followed by "] without a comma + brace
+        Assert.DoesNotContain("\"Test message\",{", json);
+    }
+
     private static int CountOccurrences(string text, string search)
     {
         var count = 0;
