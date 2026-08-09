@@ -1,11 +1,7 @@
-﻿namespace Serilog.Sinks.GrafanaLoki.Tests;
+﻿namespace Serilog.Sinks.GrafanaLoki.Tests.Fixtures;
 
 class HttpClientTestFixture : IDisposable
 {
-    public HttpClientTestFixture()
-    {
-    }
-
     public void Dispose()
     {
     }

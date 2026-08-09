@@ -2,12 +2,7 @@
 
 public class TestResponse
 {
-    public TestResponse()
-    {
-        Streams = new List<Stream>();
-    }
-
-    public IList<Stream> Streams { get; set; }
+    public IList<Stream> Streams { get; set; } = new List<Stream>();
 }
 
 public class Stream

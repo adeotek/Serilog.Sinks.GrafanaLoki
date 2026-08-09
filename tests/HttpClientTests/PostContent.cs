@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Serilog.Sinks.GrafanaLoki.Tests.Fixtures;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
 using Shouldly;
 using Xunit;

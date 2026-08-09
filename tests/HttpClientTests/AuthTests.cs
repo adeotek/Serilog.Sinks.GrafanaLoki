@@ -1,4 +1,5 @@
 ﻿using Serilog.Sinks.GrafanaLoki.Common;
+using Serilog.Sinks.GrafanaLoki.Tests.Fixtures;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
 using Shouldly;
 using Xunit;
