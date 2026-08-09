@@ -22,6 +22,8 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
     private readonly long? _batchSizeLimitBytes;
     private readonly ITextFormatter _textFormatter;
     private readonly string? _propertiesStringDelimiter;
+    private readonly bool _exceptionTypeAsLabel;
+    private readonly bool _exceptionAsLabel;
     private readonly IBatchFormatter _batchFormatter;
     private readonly IHttpClient _httpClient;
     private readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
@@ -42,7 +44,9 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         string? propertiesStringDelimiter,
         ITextFormatter textFormatter,
         IBatchFormatter batchFormatter,
-        IHttpClient httpClient)
+        IHttpClient httpClient,
+        bool exceptionTypeAsLabel = true,
+        bool exceptionAsLabel = false)
     {
         _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
         _logEventLimitBytes = logEventLimitBytes;
@@ -52,6 +56,8 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         _propertiesStringDelimiter = propertiesStringDelimiter;
         _batchFormatter = batchFormatter ?? throw new ArgumentNullException(nameof(batchFormatter));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _exceptionTypeAsLabel = exceptionTypeAsLabel;
+        _exceptionAsLabel = exceptionAsLabel;
 
         _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
         _timer = new PortableTimer(OnTick);
@@ -80,19 +86,31 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
             return;
         }
 
+        var delimiter = _propertiesStringDelimiter ?? "`";
+
         // Add LogEvent Labels
         entry.Labels.Add(GrafanaLokiHelpers.LogLevelLabelName, logEvent.Level.ToGrafanaString());
         if (logEvent.Exception != null)
         {
-            entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionTypeLabelName, logEvent.Exception.GetType().Name);
-            entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionLabelName, logEvent.Exception.ToString().Replace("\"", _propertiesStringDelimiter ?? "`"));
+            if (_exceptionTypeAsLabel)
+            {
+                var exceptionType = logEvent.Exception.GetType().FullName;
+                if (exceptionType != null)
+                {
+                    entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionTypeLabelName, exceptionType);
+                }
+            }
+            if (_exceptionAsLabel)
+            {
+                entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionLabelName, logEvent.Exception.ToString().Replace("\"", delimiter));
+            }
         }
         foreach (var property in logEvent.Properties)
         {
             // Some enrichers pass strings with quotes surrounding the values inside the string,
             // which results in redundant quotes after serialization and a "bad request" response.
             // To avoid this, replace all quotes from the value.
-            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", _propertiesStringDelimiter ?? "`"));
+            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", delimiter));
         }
 
         var result = _queue.TryEnqueue(entry);

@@ -75,6 +75,27 @@ using (LogContext.PushProperty("ALabel", "ALabelValue"))
 ```
 
 
+### Exception Labels
+
+When a log event includes an exception, two optional labels can be attached to the Loki stream:
+
+- **`exception_type`** — the fully-qualified exception type name (e.g. `System.InvalidOperationException`).  
+  This is **enabled by default** because it has low cardinality (a finite set of exception types per application) and is safe for Loki label indexing.
+
+- **`exception`** — the full `Exception.ToString()` output (message + stack trace).  
+  This is **disabled by default** because it can introduce high label cardinality — every unique exception message and stack trace creates a new label value, which can degrade Loki query performance and increase storage cost. Enable only if you need to query by exception text directly in Loki and understand the cardinality trade-off.
+
+```csharp
+.WriteTo.GrafanaLoki(
+    "http://localhost:3100",
+    exceptionTypeAsLabel: true,   // default: true
+    exceptionAsLabel: false       // default: false
+)
+```
+
+Both flags can also be configured via `appsettings.json` (see the configuration sample below).
+
+
 ### Custom HTTP Client
 
 Serilog.Loki.GrafanaLoki uses by default the internal HTTP Client, but you can customize it by implementing the `Serilog.Sinks.GrafanaLoki.Common.IHttpClient` interface or by extending the `Serilog.Sinks.GrafanaLoki.GrafanaLokiHttpClient` class.
@@ -159,7 +180,9 @@ var logger = new LoggerConfiguration()
                     "logEventLimitBytes": null,
                     "period": null,
                     "httpRequestTimeout": 3000,
-                    "debugMode": true
+                    "debugMode": true,
+                    "exceptionTypeAsLabel": true,
+                    "exceptionAsLabel": false
                 }
             }
         ]
