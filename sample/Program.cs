@@ -13,7 +13,7 @@ Log.Information("Logger started!");
 
 Log.Information("Values: {SomeVariable1} - {SomeVariable2}", "String value", 123);
 
-var totalItems = 5;
+const int totalItems = 5;
 for (var i = 0; i < totalItems; i++)
 {
     Log.Debug("Item {ItemIndex} of {TotalItems}", i + 1, totalItems);
@@ -22,7 +22,7 @@ for (var i = 0; i < totalItems; i++)
 
 try
 {
-    string r = (string)new object();
+    var r = (string)new object();
 }
 catch (Exception ex)
 {

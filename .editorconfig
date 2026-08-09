@@ -11,6 +11,4 @@ indent_size = 2
 
 [*.sh]
 end_of_line = lf
-
-[*.{cmd, bat}]
-end_of_line = crlf
+indent_size = 2
