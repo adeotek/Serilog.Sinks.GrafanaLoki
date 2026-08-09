@@ -53,7 +53,8 @@ public class BatchFormatter : IBatchFormatter
             }
             foreach (var entry in group.OrderBy(e => e.Timestamp))
             {
-                stream.Entries.AddOrAppend(entry.Timestamp.ToString(), entry.Message.TrimEnd('\r', '\n'));
+                var metadata = entry.Metadata.Count > 0 ? entry.Metadata : null;
+                stream.Entries.Add(new StreamEntry(entry.Timestamp.ToString(), entry.Message.TrimEnd('\r', '\n'), metadata));
             }
         }
 

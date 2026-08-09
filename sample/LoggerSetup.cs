@@ -22,26 +22,29 @@ internal static class LoggerSetup
             .Enrich.WithProperty("MyPropertyName", "MyPropertyValue")
             .WriteTo.Console()
             .WriteTo.GrafanaLoki(
-                "http://localhost:3100",
-                null,
-                new Dictionary<string, string>
+                url: "http://localhost:3100",
+                credentials: null,
+                labels: new Dictionary<string, string>
                 {
                     { "Environment", "Sample" },
                     { "Application", "Serilog.Sinks.GrafanaLoki.Sample" }
                 },
-                Events.LogEventLevel.Debug,
-                GrafanaLokiHelpers.DefaultOutputTemplate,
-                null,
-                null,
-                null,
-                null,
-                1000,
-                null,
-                null,
-                TimeSpan.FromSeconds(2),
-                null,
-                new CustomHttpClient(),
-                3000
+                restrictedToMinimumLevel: Events.LogEventLevel.Debug,
+                outputTemplate: GrafanaLokiHelpers.DefaultOutputTemplate,
+                propertiesStringDelimiter: null,
+                formatProvider: null,
+                batchFormatter: null,
+                queueLimitBytes: null,
+                logEventLimitBytes: 1000,
+                logEventsInBatchLimit: null,
+                batchSizeLimitBytes: null,
+                period: TimeSpan.FromSeconds(2),
+                apiVersion: null,
+                httpClient: new CustomHttpClient(),
+                httpRequestTimeout: 3000,
+                debugMode: false,
+                exceptionTypeAsLabel: true,
+                exceptionAsLabel: false
             )
             .CreateLogger();
     }

@@ -1,11 +1,10 @@
 ﻿using System.Text.RegularExpressions;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
 
-public class PostContent : IClassFixture<HttpClientTestFixture>
+public class PostContent
 {
     private readonly TestHttpClient _client = new();
 
@@ -23,7 +22,7 @@ public class PostContent : IClassFixture<HttpClientTestFixture>
         log.Dispose();
 
         // Assert
-        _client.Content.ShouldMatchApproved(x => x.WithScrubber(s => Regex.Replace(s, "\"[0-9]{19}\"", "\"<unixtimestamp>\"")));
+        ApprovalTests.Verify(_client.Content, s => Regex.Replace(s, "\"[0-9]{19}\"", "\"<unixtimestamp>\""));
     }
 
     [Fact]
@@ -42,6 +41,6 @@ public class PostContent : IClassFixture<HttpClientTestFixture>
         log.Dispose();
 
         // Assert
-        _client.Content.ShouldMatchApproved(x => x.WithScrubber(s => Regex.Replace(s, "\"[0-9]{19}\"", "\"<unixtimestamp>\"")));
+        ApprovalTests.Verify(_client.Content, s => Regex.Replace(s, "\"[0-9]{19}\"", "\"<unixtimestamp>\""));
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -25,13 +26,11 @@ public class GrafanaLokiHttpClient : IHttpClient
         SetCredentials(credentials);
     }
 
-    ~GrafanaLokiHttpClient()
-    {
-        Dispose(false);
-    }
-
     /// <inheritdoc />
     public bool DebugMode { get; set; }
+
+    /// <inheritdoc />
+    public bool UseGzipCompression { get; set; }
 
     /// <inheritdoc />
     public void SetCredentials(GrafanaLokiCredentials? credentials)
@@ -55,45 +54,67 @@ public class GrafanaLokiHttpClient : IHttpClient
     {
         try
         {
-            using var content = new StreamContent(contentStream);
-            content.Headers.Add("Content-Type", JsonContentType);
+            StreamContent content;
+            MemoryStream? compressStream = null;
 
-            var response = await HttpClient
-                .PostAsync(requestUri, content)
-                .ConfigureAwait(false);
-
-            if (response.StatusCode == HttpStatusCode.BadRequest)
+            if (UseGzipCompression)
             {
-                var body = await response.Content.ReadAsStringAsync();
-                if (DebugMode)
+                compressStream = new MemoryStream();
+                using (var gzip = new GZipStream(compressStream, CompressionLevel.Optimal, leaveOpen: true))
+                {
+                    await contentStream.CopyToAsync(gzip).ConfigureAwait(false);
+                }
+                compressStream.Position = 0;
+                content = new StreamContent(compressStream);
+                content.Headers.Add("Content-Type", JsonContentType);
+                content.Headers.Add("Content-Encoding", "gzip");
+            }
+            else
+            {
+                content = new StreamContent(contentStream);
+                content.Headers.Add("Content-Type", JsonContentType);
+            }
+
+            using (compressStream)
+            using (content)
+            {
+                var response = await HttpClient
+                    .PostAsync(requestUri, content)
+                    .ConfigureAwait(false);
+
+                if (response.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    if (DebugMode)
+                    {
+                        SelfLog.WriteLine("GrafanaLoki sending data: {0}", Helpers.StreamToString(contentStream));
+                        SelfLog.WriteLine("GrafanaLoki response StatusCode: {0} - {1}", (int)response.StatusCode, response.ReasonPhrase);
+                        SelfLog.WriteLine("GrafanaLoki response body: {0}", body);
+                    }
+
+                    if (body.Contains("error parsing labels:") || body.Contains("ignored, reason: 'entry out of order' for stream"))
+                    {
+                        SelfLog.WriteLine("Bad request Loki response: {0}", body);
+                        response.StatusCode = HttpStatusCode.OK;
+                        if (DebugMode)
+                        {
+                            SelfLog.WriteLine("GrafanaLoki error suppressed!!!");
+                        }
+                    }
+                }
+                else if (DebugMode)
                 {
                     SelfLog.WriteLine("GrafanaLoki sending data: {0}", Helpers.StreamToString(contentStream));
                     SelfLog.WriteLine("GrafanaLoki response StatusCode: {0} - {1}", (int)response.StatusCode, response.ReasonPhrase);
-                    SelfLog.WriteLine("GrafanaLoki response body: {0}", body);
-                }
-
-                if (body.Contains("error parsing labels:") || body.Contains("ignored, reason: 'entry out of order' for stream"))
-                {
-                    SelfLog.WriteLine("Bad request Loki response: {0}", body);
-                    response.StatusCode = HttpStatusCode.OK;
-                    if (DebugMode)
+                    if (response.StatusCode != HttpStatusCode.NoContent && response.StatusCode != HttpStatusCode.OK)
                     {
-                        SelfLog.WriteLine("GrafanaLoki error suppressed!!!");
+                        var body = await response.Content.ReadAsStringAsync();
+                        SelfLog.WriteLine("GrafanaLoki response body: {0}", body);
                     }
                 }
-            }
-            else if (DebugMode)
-            {
-                SelfLog.WriteLine("GrafanaLoki sending data: {0}", Helpers.StreamToString(contentStream));
-                SelfLog.WriteLine("GrafanaLoki response StatusCode: {0} - {1}", (int)response.StatusCode, response.ReasonPhrase);
-                if (response.StatusCode != HttpStatusCode.NoContent && response.StatusCode != HttpStatusCode.OK)
-                {
-                    var body = await response.Content.ReadAsStringAsync();
-                    SelfLog.WriteLine("GrafanaLoki response body: {0}", body);
-                }
-            }
 
-            return response;
+                return response;
+            }
         }
         catch (Exception ex)
         {
@@ -109,7 +130,6 @@ public class GrafanaLokiHttpClient : IHttpClient
     public void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)

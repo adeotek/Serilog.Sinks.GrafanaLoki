@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Serilog.Configuration;
+using Serilog.Debugging;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using Serilog.Sinks.GrafanaLoki.Common;
@@ -19,7 +20,7 @@ public static class LoggerConfigurationGrafanaLokiExtensions
     /// <param name="credentials">Loki Http credentials.</param>
     /// <param name="labels">Log event Labels</param>
     /// <param name="restrictedToMinimumLevel">
-    /// The minimum level for events passed through the sink. Ignored when <paramref name="levelSwitch"/> is specified.
+    /// The minimum level for events passed through the sink.
     /// </param>
     /// <param name="outputTemplate">
     /// A message template describing the format used to write to the sink.
@@ -71,6 +72,14 @@ public static class LoggerConfigurationGrafanaLokiExtensions
     /// <param name="debugMode">
     /// Debug mod switch on/off.
     /// </param>
+    /// <param name="exceptionTypeAsLabel">
+    /// When true (default), the exception type (e.g. "System.InvalidOperationException")
+    /// is added as a Loki label. This is low-cardinality and safe to enable.
+    /// </param>
+    /// <param name="exceptionAsLabel">
+    /// When true, the full exception string (message and stack trace) is added as a Loki label.
+    /// This can cause high label cardinality and is disabled by default.
+    /// </param>
     /// <returns>Configuration object allowing method chaining.</returns>
     public static LoggerConfiguration GrafanaLoki(
         this LoggerSinkConfiguration sinkConfiguration,
@@ -90,7 +99,12 @@ public static class LoggerConfigurationGrafanaLokiExtensions
         string? apiVersion = null,
         IHttpClient? httpClient = null,
         int? httpRequestTimeout = null,
-        bool debugMode = false)
+        bool debugMode = false,
+        bool exceptionTypeAsLabel = true,
+        bool exceptionAsLabel = false,
+        bool useStructuredMetadata = false,
+        int? maxLabelCount = null,
+        bool useGzipCompression = false)
     {
         if (sinkConfiguration == null)
         {
@@ -120,6 +134,14 @@ public static class LoggerConfigurationGrafanaLokiExtensions
             httpClient.SetCredentials(credentials);
         }
         httpClient.DebugMode = debugMode;
+        if (httpClient is GrafanaLokiHttpClient grafanaLokiHttpClient)
+        {
+            grafanaLokiHttpClient.UseGzipCompression = useGzipCompression;
+        }
+        else if (useGzipCompression)
+        {
+            SelfLog.WriteLine("useGzipCompression is set to true but the provided HTTP client is not a GrafanaLokiHttpClient; compression will not be applied");
+        }
 
         var sink = new GrafanaLokiHttpSink(
             requestUri: requestUri,
@@ -131,7 +153,11 @@ public static class LoggerConfigurationGrafanaLokiExtensions
             propertiesStringDelimiter,
             textFormatter,
             batchFormatter,
-            httpClient);
+            httpClient,
+            exceptionTypeAsLabel,
+            exceptionAsLabel,
+            useStructuredMetadata,
+            maxLabelCount);
 
         return sinkConfiguration.Sink(sink, restrictedToMinimumLevel);
     }

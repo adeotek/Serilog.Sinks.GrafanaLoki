@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Serilog.Core;
@@ -22,12 +22,16 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
     private readonly long? _batchSizeLimitBytes;
     private readonly ITextFormatter _textFormatter;
     private readonly string? _propertiesStringDelimiter;
+    private readonly bool _exceptionTypeAsLabel;
+    private readonly bool _exceptionAsLabel;
     private readonly IBatchFormatter _batchFormatter;
     private readonly IHttpClient _httpClient;
     private readonly ExponentialBackoffConnectionSchedule _connectionSchedule;
     private readonly PortableTimer _timer;
     private readonly object _syncRoot = new ();
     private readonly LogEventsQueue _queue;
+    private readonly bool _useStructuredMetadata;
+    private readonly int? _maxLabelCount;
 
     private LogEventsBatch? _unsentBatch;
     private volatile bool _disposed;
@@ -42,7 +46,11 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         string? propertiesStringDelimiter,
         ITextFormatter textFormatter,
         IBatchFormatter batchFormatter,
-        IHttpClient httpClient)
+        IHttpClient httpClient,
+        bool exceptionTypeAsLabel = true,
+        bool exceptionAsLabel = false,
+        bool useStructuredMetadata = false,
+        int? maxLabelCount = null)
     {
         _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
         _logEventLimitBytes = logEventLimitBytes;
@@ -52,6 +60,10 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         _propertiesStringDelimiter = propertiesStringDelimiter;
         _batchFormatter = batchFormatter ?? throw new ArgumentNullException(nameof(batchFormatter));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _exceptionTypeAsLabel = exceptionTypeAsLabel;
+        _exceptionAsLabel = exceptionAsLabel;
+        _useStructuredMetadata = useStructuredMetadata;
+        _maxLabelCount = maxLabelCount;
 
         _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
         _timer = new PortableTimer(OnTick);
@@ -67,10 +79,91 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
             throw new ArgumentNullException(nameof(logEvent));
         }
 
+        if (_disposed)
+        {
+            SelfLog.WriteLine("Sink is disposed; log event will be dropped");
+            return;
+        }
+
         var writer = new StringWriter();
         _textFormatter.Format(logEvent, writer);
         var entry = new LogEventEntry(writer.ToString(), logEvent.Timestamp);
 
+        var delimiter = _propertiesStringDelimiter ?? "`";
+
+        // Add LogEvent Labels
+        entry.Labels.Add(GrafanaLokiHelpers.LogLevelLabelName, logEvent.Level.ToGrafanaString());
+        if (logEvent.Exception != null)
+        {
+            if (_exceptionTypeAsLabel)
+            {
+                var exceptionType = logEvent.Exception.GetType().FullName;
+                if (exceptionType != null)
+                {
+                    entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionTypeLabelName, exceptionType);
+                }
+            }
+            if (_exceptionAsLabel)
+            {
+                entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionLabelName, logEvent.Exception.ToString().Replace("\"", delimiter));
+            }
+        }
+        foreach (var property in logEvent.Properties)
+        {
+            // Skip reserved label names to prevent system labels from being overwritten.
+            if (property.Key == GrafanaLokiHelpers.LogLevelLabelName
+                || property.Key == GrafanaLokiHelpers.ExceptionTypeLabelName
+                || property.Key == GrafanaLokiHelpers.ExceptionLabelName)
+            {
+                continue;
+            }
+
+            // Some enrichers pass strings with quotes surrounding the values inside the string,
+            // which results in redundant quotes after serialization and a "bad request" response.
+            // To avoid this, replace all quotes from the value.
+            if (_useStructuredMetadata)
+            {
+                entry.Metadata.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", delimiter));
+            }
+            else
+            {
+                entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", delimiter));
+            }
+        }
+
+        if (_maxLabelCount.HasValue && entry.Labels.Count > _maxLabelCount.Value)
+        {
+            var reservedCount = entry.Labels.Keys.Count(k =>
+                k == GrafanaLokiHelpers.LogLevelLabelName
+                || k == GrafanaLokiHelpers.ExceptionTypeLabelName
+                || k == GrafanaLokiHelpers.ExceptionLabelName);
+
+            var excessKeys = entry.Labels
+                .Where(kvp => kvp.Key != GrafanaLokiHelpers.LogLevelLabelName
+                           && kvp.Key != GrafanaLokiHelpers.ExceptionTypeLabelName
+                           && kvp.Key != GrafanaLokiHelpers.ExceptionLabelName)
+                .Skip(Math.Max(0, _maxLabelCount.Value - reservedCount))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in excessKeys)
+            {
+                var removedValue = entry.Labels[key];
+                entry.Labels.Remove(key);
+
+                if (_useStructuredMetadata)
+                {
+                    entry.Metadata.AddOrReplace(key, removedValue);
+                    SelfLog.WriteLine("Label '{0}' moved to structured metadata to respect maxLabelCount limit of {1}", key, _maxLabelCount.Value);
+                }
+                else
+                {
+                    SelfLog.WriteLine("Label '{0}' dropped to respect maxLabelCount limit of {1}", key, _maxLabelCount.Value);
+                }
+            }
+        }
+
+        // Check size AFTER labels are added so the full event size is considered.
         if (entry.GetByteSize() > _logEventLimitBytes)
         {
             SelfLog.WriteLine(
@@ -78,20 +171,6 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
                 _logEventLimitBytes,
                 JsonSerializer.Serialize(entry));
             return;
-        }
-
-        // Add LogEvent Labels
-        entry.Labels.Add(GrafanaLokiHelpers.LogLevelLabelName, logEvent.Level.ToGrafanaString());
-        if (logEvent.Exception != null)
-        {
-            entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionLabelName, logEvent.Exception.ToString().Replace("\"", _propertiesStringDelimiter ?? "`"));
-        }
-        foreach (var property in logEvent.Properties)
-        {
-            // Some enrichers pass strings with quotes surrounding the values inside the string,
-            // which results in redundant quotes after serialization and a "bad request" response.
-            // To avoid this, replace all quotes from the value.
-            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", _propertiesStringDelimiter ?? "`"));
         }
 
         var result = _queue.TryEnqueue(entry);
@@ -125,71 +204,76 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
 
     private async Task OnTick()
     {
+        LogEventsBatch? batch = null;
+
         try
         {
-            LogEventsBatch? batch;
-
             do
             {
-                batch = _unsentBatch ?? LogEventsQueueReader.Read(_queue, _logEventsInBatchLimit, _batchSizeLimitBytes);
-
-                if (batch.LogEvents.Count > 0)
+                try
                 {
-                    HttpResponseMessage response;
+                    batch = _unsentBatch ?? LogEventsQueueReader.Read(_queue, _logEventsInBatchLimit, _batchSizeLimitBytes);
 
-                    using (var contentStream = new MemoryStream())
-                    using (var contentWriter = new StreamWriter(contentStream, Encoding.UTF8WithoutBom))
+                    if (batch.LogEvents.Count > 0)
                     {
+                        using var contentStream = new MemoryStream();
+                        using var contentWriter = new StreamWriter(contentStream, Encoding.UTF8WithoutBom);
                         _batchFormatter.Format(batch.LogEvents, contentWriter);
 
                         await contentWriter.FlushAsync();
                         contentStream.Position = 0;
 
                         if (contentStream.Length == 0)
+                        {
+                            SelfLog.WriteLine(
+                                "Batch formatter produced empty output for {0} event(s); events will be dropped",
+                                batch.LogEvents.Count);
                             continue;
+                        }
 
-                        response = await _httpClient
+                        using var response = await _httpClient
                             .PostAsync(_requestUri, contentStream)
                             .ConfigureAwait(false);
-                    }
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        _connectionSchedule.MarkSuccess();
-                        _unsentBatch = null;
-                    }
-                    else
-                    {
-                        _connectionSchedule.MarkFailure();
-                        // Discard failed batch based on the StatusCode
-                        if (response.StatusCode == HttpStatusCode.BadRequest)
+                        if (response.IsSuccessStatusCode)
                         {
+                            _connectionSchedule.MarkSuccess();
                             _unsentBatch = null;
-                            SelfLog.WriteLine("Batch discarded as this is not a retryable error!");
                         }
                         else
                         {
-                            _unsentBatch = batch;
-                            SelfLog.WriteLine("Batch marked as unsent (to be retried)");
-                        }
+                            _connectionSchedule.MarkFailure();
+                            // Discard failed batch based on the StatusCode
+                            if (response.StatusCode == HttpStatusCode.BadRequest)
+                            {
+                                _unsentBatch = null;
+                                SelfLog.WriteLine("Batch discarded as this is not a retryable error!");
+                            }
+                            else
+                            {
+                                _unsentBatch = batch;
+                                SelfLog.WriteLine("Batch marked as unsent (to be retried)");
+                            }
 
-                        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", response.StatusCode, body);
-                        break;
+                            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            SelfLog.WriteLine("Received failed HTTP shipping result {0}: {1}", response.StatusCode, body);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // For whatever reason, there's nothing waiting to be sent. This means we should try connecting
+                        // again at the regular interval, so mark the attempt as successful.
+                        _connectionSchedule.MarkSuccess();
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    // For whatever reason, there's nothing waiting to be sent. This means we should try connecting
-                    // again at the regular interval, so mark the attempt as successful.
-                    _connectionSchedule.MarkSuccess();
+                    SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, e);
+                    _connectionSchedule.MarkFailure();
+                    _unsentBatch = batch;
+                    break;
                 }
-            } while (batch.HasReachedLimit);
-        }
-        catch (Exception e)
-        {
-            SelfLog.WriteLine("Exception while emitting periodic batch from {0}: {1}", this, e);
-            _connectionSchedule.MarkFailure();
+            } while (batch is { HasReachedLimit: true });
         }
         finally
         {

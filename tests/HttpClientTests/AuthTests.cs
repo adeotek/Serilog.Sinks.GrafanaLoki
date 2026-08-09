@@ -1,11 +1,10 @@
 ﻿using Serilog.Sinks.GrafanaLoki.Common;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
 
-public class AuthTests : IClassFixture<HttpClientTestFixture>
+public class AuthTests
 {
     private readonly TestHttpClient _client;
 
@@ -30,10 +29,8 @@ public class AuthTests : IClassFixture<HttpClientTestFixture>
 
         // Assert
         var auth = _client.Client.DefaultRequestHeaders.Authorization;
-        auth.ShouldSatisfyAllConditions(
-            () => auth?.Scheme.ShouldBe("Basic"),
-            () => auth?.Parameter.ShouldBe(Helpers.Base64Encode($"{credentials.User}:{credentials.Password}"))
-        );
+        Assert.Equal("Basic", auth?.Scheme);
+        Assert.Equal(Helpers.Base64Encode($"{credentials.User}:{credentials.Password}"), auth?.Parameter);
     }
 
     [Fact]
@@ -50,6 +47,6 @@ public class AuthTests : IClassFixture<HttpClientTestFixture>
         log.Dispose();
 
         // Assert
-        _client.Client.DefaultRequestHeaders.Authorization.ShouldBeNull();
+        Assert.Null(_client.Client.DefaultRequestHeaders.Authorization);
     }
 }

@@ -2,17 +2,12 @@
 
 public class TestResponse
 {
-    public TestResponse()
-    {
-        Streams = new List<Stream>();
-    }
-
-    public IList<Stream> Streams { get; set; }
+    public IList<LokiStream> Streams { get; set; } = new List<LokiStream>();
 }
 
-public class Stream
+public class LokiStream
 {
-    public Dictionary<string, string> Labels { get; set; }
+    public Dictionary<string, string> Labels { get; set; } = new();
 
-    public List<List<string>> Values { get; set; }
+    public IList<IList<string>> Values { get; set; } = new List<IList<string>>();
 }

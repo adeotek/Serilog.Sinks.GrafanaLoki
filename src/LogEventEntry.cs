@@ -8,11 +8,13 @@ namespace Serilog.Sinks.GrafanaLoki;
 public struct LogEventEntry
 {
     private long _size = -1;
-    private int _labelsCount = 0;
+    private int _labelsCount = -1;
+    private int _metadataCount = -1;
 
     public long Timestamp { get; }
     public string Message { get; }
     public Dictionary<string, string> Labels { get; } = new();
+    public Dictionary<string, string> Metadata { get; } = new();
 
     public LogEventEntry(string message, DateTimeOffset? timestamp = null)
     {
@@ -22,13 +24,14 @@ public struct LogEventEntry
 
     public long GetByteSize()
     {
-        if (Labels.Count == _labelsCount)
+        if (Labels.Count == _labelsCount && Metadata.Count == _metadataCount)
         {
             return _size;
         }
 
         _labelsCount = Labels.Count;
-        _size = sizeof(long) + ByteSize.From(Message) + Labels.Sum(item => ByteSize.From(item.Key) + ByteSize.From(item.Value));
+        _metadataCount = Metadata.Count;
+        _size = sizeof(long) + ByteSize.From(Message) + Labels.Sum(item => ByteSize.From(item.Key) + ByteSize.From(item.Value)) + Metadata.Sum(item => ByteSize.From(item.Key) + ByteSize.From(item.Value));
         return _size;
     }
 }
