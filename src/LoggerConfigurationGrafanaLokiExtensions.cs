@@ -100,7 +100,10 @@ public static class LoggerConfigurationGrafanaLokiExtensions
         int? httpRequestTimeout = null,
         bool debugMode = false,
         bool exceptionTypeAsLabel = true,
-        bool exceptionAsLabel = false)
+        bool exceptionAsLabel = false,
+        bool useStructuredMetadata = false,
+        int? maxLabelCount = null,
+        bool useGzipCompression = false)
     {
         if (sinkConfiguration == null)
         {
@@ -130,6 +133,10 @@ public static class LoggerConfigurationGrafanaLokiExtensions
             httpClient.SetCredentials(credentials);
         }
         httpClient.DebugMode = debugMode;
+        if (httpClient is GrafanaLokiHttpClient grafanaLokiHttpClient)
+        {
+            grafanaLokiHttpClient.UseGzipCompression = useGzipCompression;
+        }
 
         var sink = new GrafanaLokiHttpSink(
             requestUri: requestUri,
@@ -143,7 +150,9 @@ public static class LoggerConfigurationGrafanaLokiExtensions
             batchFormatter,
             httpClient,
             exceptionTypeAsLabel,
-            exceptionAsLabel);
+            exceptionAsLabel,
+            useStructuredMetadata,
+            maxLabelCount);
 
         return sinkConfiguration.Sink(sink, restrictedToMinimumLevel);
     }

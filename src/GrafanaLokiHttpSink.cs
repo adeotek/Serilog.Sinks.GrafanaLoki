@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -29,6 +30,8 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
     private readonly PortableTimer _timer;
     private readonly object _syncRoot = new ();
     private readonly LogEventsQueue _queue;
+    private readonly bool _useStructuredMetadata;
+    private readonly int? _maxLabelCount;
 
     private LogEventsBatch? _unsentBatch;
     private volatile bool _disposed;
@@ -45,7 +48,9 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         IBatchFormatter batchFormatter,
         IHttpClient httpClient,
         bool exceptionTypeAsLabel = true,
-        bool exceptionAsLabel = false)
+        bool exceptionAsLabel = false,
+        bool useStructuredMetadata = false,
+        int? maxLabelCount = null)
     {
         _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
         _logEventLimitBytes = logEventLimitBytes;
@@ -57,6 +62,8 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _exceptionTypeAsLabel = exceptionTypeAsLabel;
         _exceptionAsLabel = exceptionAsLabel;
+        _useStructuredMetadata = useStructuredMetadata;
+        _maxLabelCount = maxLabelCount;
 
         _connectionSchedule = new ExponentialBackoffConnectionSchedule(period);
         _timer = new PortableTimer(OnTick);
@@ -114,7 +121,46 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
             // Some enrichers pass strings with quotes surrounding the values inside the string,
             // which results in redundant quotes after serialization and a "bad request" response.
             // To avoid this, replace all quotes from the value.
-            entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", delimiter));
+            if (_useStructuredMetadata)
+            {
+                entry.Metadata.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", delimiter));
+            }
+            else
+            {
+                entry.Labels.AddOrReplace(property.Key, property.Value.ToString().Replace("\"", delimiter));
+            }
+        }
+
+        if (_maxLabelCount.HasValue && entry.Labels.Count > _maxLabelCount.Value)
+        {
+            var reservedCount = entry.Labels.Keys.Count(k =>
+                k == GrafanaLokiHelpers.LogLevelLabelName
+                || k == GrafanaLokiHelpers.ExceptionTypeLabelName
+                || k == GrafanaLokiHelpers.ExceptionLabelName);
+
+            var excessKeys = entry.Labels
+                .Where(kvp => kvp.Key != GrafanaLokiHelpers.LogLevelLabelName
+                           && kvp.Key != GrafanaLokiHelpers.ExceptionTypeLabelName
+                           && kvp.Key != GrafanaLokiHelpers.ExceptionLabelName)
+                .Skip(Math.Max(0, _maxLabelCount.Value - reservedCount))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in excessKeys)
+            {
+                var removedValue = entry.Labels[key];
+                entry.Labels.Remove(key);
+
+                if (_useStructuredMetadata)
+                {
+                    entry.Metadata.AddOrReplace(key, removedValue);
+                    SelfLog.WriteLine("Label '{0}' moved to structured metadata to respect maxLabelCount limit of {1}", key, _maxLabelCount.Value);
+                }
+                else
+                {
+                    SelfLog.WriteLine("Label '{0}' dropped to respect maxLabelCount limit of {1}", key, _maxLabelCount.Value);
+                }
+            }
         }
 
         // Check size AFTER labels are added so the full event size is considered.
