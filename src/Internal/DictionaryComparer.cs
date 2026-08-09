@@ -7,11 +7,16 @@ internal class DictionaryComparer<TKey, TValue> : IEqualityComparer<IDictionary<
 {
     public static DictionaryComparer<TKey, TValue> Instance { get; } = new();
 
-    public bool Equals(IDictionary<TKey, TValue> x, IDictionary<TKey, TValue> y)
+    public bool Equals(IDictionary<TKey, TValue>? x, IDictionary<TKey, TValue>? y)
     {
         if (ReferenceEquals(x, y))
         {
             return true;
+        }
+
+        if (x is null || y is null)
+        {
+            return false;
         }
 
         if (x.GetType() != y.GetType())
@@ -19,11 +24,18 @@ internal class DictionaryComparer<TKey, TValue> : IEqualityComparer<IDictionary<
             return false;
         }
 
-        return x.Count == y.Count && !x.Except(y).Any();
+        return x.Count == y.Count && x.All(kvp =>
+            y.TryGetValue(kvp.Key, out var value)
+            && EqualityComparer<TValue>.Default.Equals(kvp.Value, value));
     }
 
-    public int GetHashCode(IDictionary<TKey, TValue> obj)
+    public int GetHashCode(IDictionary<TKey, TValue>? obj)
     {
+        if (obj is null)
+        {
+            return 0;
+        }
+
         // Overflow is fine, just wrap
         unchecked
         {
