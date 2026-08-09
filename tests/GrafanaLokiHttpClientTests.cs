@@ -1,6 +1,5 @@
 using System.Net;
 using Serilog.Sinks.GrafanaLoki.Common;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests;
@@ -12,7 +11,7 @@ public class GrafanaLokiHttpClientTests
     {
         using var client = new GrafanaLokiHttpClient(null, null);
 
-        client.ShouldNotBeNull();
+        Assert.NotNull(client);
     }
 
     [Fact]
@@ -22,7 +21,7 @@ public class GrafanaLokiHttpClientTests
 
         // HttpClient.Timeout is accessible via the protected HttpClient field
         // We verify construction succeeds — timeout is set internally
-        client.ShouldNotBeNull();
+        Assert.NotNull(client);
     }
 
     [Fact]
@@ -39,9 +38,9 @@ public class GrafanaLokiHttpClientTests
             .GetField("HttpClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
             .GetValue(client) as HttpClient;
 
-        headers.ShouldNotBeNull();
-        headers!.DefaultRequestHeaders.Authorization.ShouldNotBeNull();
-        headers.DefaultRequestHeaders.Authorization!.Scheme.ShouldBe("Basic");
+        Assert.NotNull(headers);
+        Assert.NotNull(headers!.DefaultRequestHeaders.Authorization);
+        Assert.Equal("Basic", headers.DefaultRequestHeaders.Authorization!.Scheme);
     }
 
     [Fact]
@@ -53,8 +52,8 @@ public class GrafanaLokiHttpClientTests
             .GetField("HttpClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
             .GetValue(client) as HttpClient;
 
-        headers.ShouldNotBeNull();
-        headers!.DefaultRequestHeaders.Authorization.ShouldBeNull();
+        Assert.NotNull(headers);
+        Assert.Null(headers!.DefaultRequestHeaders.Authorization);
     }
 
     [Fact]
@@ -70,8 +69,8 @@ public class GrafanaLokiHttpClientTests
             .GetField("HttpClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?
             .GetValue(client) as HttpClient;
 
-        headers.ShouldNotBeNull();
-        headers!.DefaultRequestHeaders.Authorization.ShouldBeNull();
+        Assert.NotNull(headers);
+        Assert.Null(headers!.DefaultRequestHeaders.Authorization);
     }
 
     [Fact]
@@ -87,7 +86,7 @@ public class GrafanaLokiHttpClientTests
         });
 
         var auth = httpClient.DefaultRequestHeaders.Authorization;
-        auth!.Scheme.ShouldBe("Bearer"); // Original header preserved
+        Assert.Equal("Bearer", auth!.Scheme); // Original header preserved
     }
 
     [Fact]
@@ -95,7 +94,7 @@ public class GrafanaLokiHttpClientTests
     {
         using var client = new GrafanaLokiHttpClient();
 
-        client.DebugMode.ShouldBeFalse();
+        Assert.False(client.DebugMode);
     }
 
     [Fact]
@@ -103,7 +102,7 @@ public class GrafanaLokiHttpClientTests
     {
         using var client = new GrafanaLokiHttpClient { DebugMode = true };
 
-        client.DebugMode.ShouldBeTrue();
+        Assert.True(client.DebugMode);
     }
 
     [Fact]
@@ -112,7 +111,7 @@ public class GrafanaLokiHttpClientTests
         // This test verifies construction works — actual POST requires a running server
         using var client = new GrafanaLokiHttpClient();
 
-        client.ShouldNotBeNull();
+        Assert.NotNull(client);
     }
 
     [Fact]
@@ -121,6 +120,6 @@ public class GrafanaLokiHttpClientTests
         // -1 is the default (no timeout override)
         using var client = new GrafanaLokiHttpClient(null, null, httpTimeout: -1);
 
-        client.ShouldNotBeNull();
+        Assert.NotNull(client);
     }
 }

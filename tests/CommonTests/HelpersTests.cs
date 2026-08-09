@@ -1,5 +1,4 @@
 using Serilog.Sinks.GrafanaLoki.Common;
-using Shouldly;
 using Xunit;
 using Encoding = Serilog.Sinks.GrafanaLoki.Common.Encoding;
 
@@ -14,8 +13,8 @@ public class HelpersTests
 
         dict.AddOrReplace("key1", "value1");
 
-        dict.ShouldHaveSingleItem();
-        dict["key1"].ShouldBe("value1");
+        Assert.Single(dict);
+        Assert.Equal("value1", dict["key1"]);
     }
 
     [Fact]
@@ -25,8 +24,8 @@ public class HelpersTests
 
         dict.AddOrReplace("key1", "newValue");
 
-        dict.ShouldHaveSingleItem();
-        dict["key1"].ShouldBe("newValue");
+        Assert.Single(dict);
+        Assert.Equal("newValue", dict["key1"]);
     }
 
     [Fact]
@@ -36,7 +35,7 @@ public class HelpersTests
 
         var result = dict.AddOrReplace("key1", "value1");
 
-        result.ShouldBeSameAs(dict);
+        Assert.Same(dict, result);
     }
 
     [Fact]
@@ -46,8 +45,8 @@ public class HelpersTests
 
         dict.AddOrAppend("key1", "value1");
 
-        dict.ShouldHaveSingleItem();
-        dict["key1"].ShouldBe("value1");
+        Assert.Single(dict);
+        Assert.Equal("value1", dict["key1"]);
     }
 
     [Fact]
@@ -57,8 +56,8 @@ public class HelpersTests
 
         dict.AddOrAppend("key1", " world");
 
-        dict.ShouldHaveSingleItem();
-        dict["key1"].ShouldBe("hello world");
+        Assert.Single(dict);
+        Assert.Equal("hello world", dict["key1"]);
     }
 
     [Fact]
@@ -68,7 +67,7 @@ public class HelpersTests
 
         dict.AddOrAppend("key1", "value");
 
-        dict["key1"].ShouldBe("value");
+        Assert.Equal("value", dict["key1"]);
     }
 
     [Fact]
@@ -78,7 +77,7 @@ public class HelpersTests
 
         dict.AddOrAppend("key1", null!);
 
-        dict["key1"].ShouldBe("existing");
+        Assert.Equal("existing", dict["key1"]);
     }
 
     [Fact]
@@ -88,7 +87,7 @@ public class HelpersTests
 
         var result = dict.AddOrAppend("key1", "value1");
 
-        result.ShouldBeSameAs(dict);
+        Assert.Same(dict, result);
     }
 
     [Fact]
@@ -96,7 +95,7 @@ public class HelpersTests
     {
         var result = Helpers.Base64Encode("test:password");
 
-        result.ShouldBe("dGVzdDpwYXNzd29yZA==");
+        Assert.Equal("dGVzdDpwYXNzd29yZA==", result);
     }
 
     [Fact]
@@ -104,7 +103,7 @@ public class HelpersTests
     {
         var result = Helpers.Base64Encode("");
 
-        result.ShouldBe("");
+        Assert.Equal("", result);
     }
 
     [Fact]
@@ -114,7 +113,7 @@ public class HelpersTests
 
         // Verify round-trip
         var decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(result));
-        decoded.ShouldBe("user:paßwörd");
+        Assert.Equal("user:paßwörd", decoded);
     }
 
     [Fact]
@@ -125,7 +124,7 @@ public class HelpersTests
 
         var result = Helpers.StreamToString(stream);
 
-        result.ShouldBe(input);
+        Assert.Equal(input, result);
     }
 
     [Fact]
@@ -137,6 +136,6 @@ public class HelpersTests
 
         var result = Helpers.StreamToString(stream);
 
-        result.ShouldBe(input);
+        Assert.Equal(input, result);
     }
 }

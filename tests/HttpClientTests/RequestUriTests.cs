@@ -1,6 +1,5 @@
 ﻿using Serilog.Sinks.GrafanaLoki.Common;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
@@ -30,6 +29,6 @@ public class RequestUriTests
         log.Dispose();
 
         // Assert
-        _client.RequestUri.ShouldBe(GrafanaLokiHelpers.BuildPostUri(url));
+        Assert.Equal(GrafanaLokiHelpers.BuildPostUri(url), _client.RequestUri);
     }
 }

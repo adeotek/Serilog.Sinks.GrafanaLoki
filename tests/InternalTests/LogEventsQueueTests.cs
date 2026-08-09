@@ -1,5 +1,4 @@
 using Serilog.Sinks.GrafanaLoki.Internal;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.InternalTests;
@@ -11,7 +10,7 @@ public class LogEventsQueueTests
     {
         var queue = new LogEventsQueue(null);
 
-        queue.ShouldNotBeNull();
+        Assert.NotNull(queue);
     }
 
     [Fact]
@@ -19,19 +18,19 @@ public class LogEventsQueueTests
     {
         var queue = new LogEventsQueue(1024);
 
-        queue.ShouldNotBeNull();
+        Assert.NotNull(queue);
     }
 
     [Fact]
     public void Constructor_ThrowsOnZeroLimit()
     {
-        Should.Throw<ArgumentException>(() => new LogEventsQueue(0));
+        Assert.Throws<ArgumentException>(() => new LogEventsQueue(0));
     }
 
     [Fact]
     public void Constructor_ThrowsOnNegativeLimit()
     {
-        Should.Throw<ArgumentException>(() => new LogEventsQueue(-1));
+        Assert.Throws<ArgumentException>(() => new LogEventsQueue(-1));
     }
 
     [Fact]
@@ -42,7 +41,7 @@ public class LogEventsQueueTests
 
         var result = queue.TryEnqueue(entry);
 
-        result.ShouldBe(LogEventsQueue.EnqueueResult.Ok);
+        Assert.Equal(LogEventsQueue.EnqueueResult.Ok, result);
     }
 
     [Fact]
@@ -55,7 +54,7 @@ public class LogEventsQueueTests
         entry.Labels.Add("key1", "value1");
         entry.Labels.Add("key2", "value2");
 
-        Should.Throw<Exception>(() => queue.Enqueue(entry));
+        Assert.Throws<Exception>(() => queue.Enqueue(entry));
     }
 
     [Fact]
@@ -67,7 +66,7 @@ public class LogEventsQueueTests
 
         var result = queue.TryEnqueue(entry);
 
-        result.ShouldBe(LogEventsQueue.EnqueueResult.QueueFull);
+        Assert.Equal(LogEventsQueue.EnqueueResult.QueueFull, result);
     }
 
     [Fact]
@@ -77,8 +76,8 @@ public class LogEventsQueueTests
 
         var result = queue.TryDequeue(null, out var logEvent);
 
-        result.ShouldBe(LogEventsQueue.DequeueResult.QueueEmpty);
-        logEvent.ShouldBeNull();
+        Assert.Equal(LogEventsQueue.DequeueResult.QueueEmpty, result);
+        Assert.Null(logEvent);
     }
 
     [Fact]
@@ -90,9 +89,9 @@ public class LogEventsQueueTests
 
         var result = queue.TryDequeue(null, out var dequeued);
 
-        result.ShouldBe(LogEventsQueue.DequeueResult.Ok);
-        dequeued.ShouldNotBeNull();
-        dequeued.Value.Message.ShouldBe("Test message");
+        Assert.Equal(LogEventsQueue.DequeueResult.Ok, result);
+        Assert.NotNull(dequeued);
+        Assert.Equal("Test message", dequeued.Value.Message);
     }
 
     [Fact]
@@ -107,8 +106,8 @@ public class LogEventsQueueTests
 
         var result = queue.TryDequeue(1, out var logEvent); // 1 byte max
 
-        result.ShouldBe(LogEventsQueue.DequeueResult.MaxSizeViolation);
-        logEvent.ShouldBeNull();
+        Assert.Equal(LogEventsQueue.DequeueResult.MaxSizeViolation, result);
+        Assert.Null(logEvent);
     }
 
     [Fact]
@@ -120,8 +119,8 @@ public class LogEventsQueueTests
         queue.TryEnqueue(entry);
         var result = queue.TryDequeue(null, out var dequeued);
 
-        result.ShouldBe(LogEventsQueue.DequeueResult.Ok);
-        dequeued.ShouldNotBeNull();
+        Assert.Equal(LogEventsQueue.DequeueResult.Ok, result);
+        Assert.NotNull(dequeued);
     }
 
     [Fact]
@@ -140,8 +139,8 @@ public class LogEventsQueueTests
         queue.TryDequeue(null, out var d2);
         queue.TryDequeue(null, out var d3);
 
-        d1!.Value.Message.ShouldBe("First");
-        d2!.Value.Message.ShouldBe("Second");
-        d3!.Value.Message.ShouldBe("Third");
+        Assert.Equal("First", d1!.Value.Message);
+        Assert.Equal("Second", d2!.Value.Message);
+        Assert.Equal("Third", d3!.Value.Message);
     }
 }

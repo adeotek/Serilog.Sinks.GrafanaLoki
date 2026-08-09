@@ -1,5 +1,4 @@
 using Serilog.Sinks.GrafanaLoki.Internal;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.InternalTests;
@@ -13,7 +12,7 @@ public class DictionaryComparerTests
 
         var result = DictionaryComparer<string, string>.Instance.Equals(dict, dict);
 
-        result.ShouldBeTrue();
+        Assert.True(result);
     }
 
     [Fact]
@@ -24,7 +23,7 @@ public class DictionaryComparerTests
 
         var result = DictionaryComparer<string, string>.Instance.Equals(dict1, dict2);
 
-        result.ShouldBeTrue();
+        Assert.True(result);
     }
 
     [Fact]
@@ -35,7 +34,7 @@ public class DictionaryComparerTests
 
         var result = DictionaryComparer<string, string>.Instance.Equals(dict1, dict2);
 
-        result.ShouldBeFalse();
+        Assert.False(result);
     }
 
     [Fact]
@@ -46,7 +45,7 @@ public class DictionaryComparerTests
 
         var result = DictionaryComparer<string, string>.Instance.Equals(dict1, dict2);
 
-        result.ShouldBeFalse();
+        Assert.False(result);
     }
 
     [Fact]
@@ -57,7 +56,7 @@ public class DictionaryComparerTests
 
         var result = DictionaryComparer<string, string>.Instance.Equals(dict1, dict2);
 
-        result.ShouldBeFalse();
+        Assert.False(result);
     }
 
     [Fact]
@@ -67,7 +66,7 @@ public class DictionaryComparerTests
 
         var result = DictionaryComparer<string, string>.Instance.Equals(null, dict);
 
-        result.ShouldBeFalse();
+        Assert.False(result);
     }
 
     [Fact]
@@ -77,7 +76,7 @@ public class DictionaryComparerTests
 
         var result = DictionaryComparer<string, string>.Instance.Equals(dict, null);
 
-        result.ShouldBeFalse();
+        Assert.False(result);
     }
 
     [Fact]
@@ -85,7 +84,7 @@ public class DictionaryComparerTests
     {
         var result = DictionaryComparer<string, string>.Instance.Equals(null, null);
 
-        result.ShouldBeTrue();
+        Assert.True(result);
     }
 
     [Fact]
@@ -97,7 +96,7 @@ public class DictionaryComparerTests
         var hash1 = DictionaryComparer<string, string>.Instance.GetHashCode(dict1);
         var hash2 = DictionaryComparer<string, string>.Instance.GetHashCode(dict2);
 
-        hash1.ShouldBe(hash2);
+        Assert.Equal(hash2, hash1);
     }
 
     [Fact]
@@ -109,7 +108,7 @@ public class DictionaryComparerTests
         var hash1 = DictionaryComparer<string, string>.Instance.GetHashCode(dict1);
         var hash2 = DictionaryComparer<string, string>.Instance.GetHashCode(dict2);
 
-        hash1.ShouldNotBe(hash2);
+        Assert.NotEqual(hash2, hash1);
     }
 
     [Fact]
@@ -117,6 +116,6 @@ public class DictionaryComparerTests
     {
         var result = DictionaryComparer<string, string>.Instance.GetHashCode(null);
 
-        result.ShouldBe(0);
+        Assert.Equal(0, result);
     }
 }

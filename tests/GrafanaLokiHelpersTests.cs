@@ -1,5 +1,4 @@
 using Serilog.Sinks.GrafanaLoki.Common;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests;
@@ -16,33 +15,33 @@ public class GrafanaLokiHelpersTests
     {
         var result = GrafanaLokiHelpers.BuildPostUri(url, apiVersion);
 
-        result.ShouldBe(expected);
+        Assert.Equal(expected, result);
     }
 
     [Fact]
     public void LogLevelLabelName_IsLevel()
     {
-        GrafanaLokiHelpers.LogLevelLabelName.ShouldBe("level");
+        Assert.Equal("level", GrafanaLokiHelpers.LogLevelLabelName);
     }
 
     [Fact]
     public void ExceptionTypeLabelName_IsExceptionType()
     {
-        GrafanaLokiHelpers.ExceptionTypeLabelName.ShouldBe("exception_type");
+        Assert.Equal("exception_type", GrafanaLokiHelpers.ExceptionTypeLabelName);
     }
 
     [Fact]
     public void ExceptionLabelName_IsException()
     {
-        GrafanaLokiHelpers.ExceptionLabelName.ShouldBe("exception");
+        Assert.Equal("exception", GrafanaLokiHelpers.ExceptionLabelName);
     }
 
     [Fact]
     public void DefaultOutputTemplate_ContainsExpectedPlaceholders()
     {
-        GrafanaLokiHelpers.DefaultOutputTemplate.ShouldContain("{Timestamp");
-        GrafanaLokiHelpers.DefaultOutputTemplate.ShouldContain("{Level");
-        GrafanaLokiHelpers.DefaultOutputTemplate.ShouldContain("{Message");
-        GrafanaLokiHelpers.DefaultOutputTemplate.ShouldContain("{Exception");
+        Assert.Contains("{Timestamp", GrafanaLokiHelpers.DefaultOutputTemplate);
+        Assert.Contains("{Level", GrafanaLokiHelpers.DefaultOutputTemplate);
+        Assert.Contains("{Message", GrafanaLokiHelpers.DefaultOutputTemplate);
+        Assert.Contains("{Exception", GrafanaLokiHelpers.DefaultOutputTemplate);
     }
 }

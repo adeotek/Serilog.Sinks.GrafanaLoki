@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Serilog.Sinks.GrafanaLoki.Tests.Fixtures;
 using Serilog.Sinks.GrafanaLoki.Tests.Infrastructure;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.HttpClientTests;
@@ -24,8 +23,8 @@ public class ExceptionLabels : IClassFixture<HttpClientTestFixture>
         var content = JsonDocument.Parse(client.Content);
         var stream = content.RootElement.GetProperty("streams")[0].GetProperty("stream");
 
-        stream.GetProperty("exception_type").GetString().ShouldBe("System.InvalidOperationException");
-        stream.TryGetProperty("exception", out _).ShouldBeFalse();
+        Assert.Equal("System.InvalidOperationException", stream.GetProperty("exception_type").GetString());
+        Assert.False(stream.TryGetProperty("exception", out _));
     }
 
     [Fact]
@@ -43,8 +42,8 @@ public class ExceptionLabels : IClassFixture<HttpClientTestFixture>
         var content = JsonDocument.Parse(client.Content);
         var stream = content.RootElement.GetProperty("streams")[0].GetProperty("stream");
 
-        stream.TryGetProperty("exception_type", out _).ShouldBeFalse();
-        stream.TryGetProperty("exception", out _).ShouldBeFalse();
+        Assert.False(stream.TryGetProperty("exception_type", out _));
+        Assert.False(stream.TryGetProperty("exception", out _));
     }
 
     [Fact]
@@ -63,7 +62,7 @@ public class ExceptionLabels : IClassFixture<HttpClientTestFixture>
         var content = JsonDocument.Parse(client.Content);
         var stream = content.RootElement.GetProperty("streams")[0].GetProperty("stream");
 
-        stream.GetProperty("exception_type").GetString().ShouldBe("System.ArgumentNullException");
+        Assert.Equal("System.ArgumentNullException", stream.GetProperty("exception_type").GetString());
     }
 
     [Fact]
@@ -85,8 +84,8 @@ public class ExceptionLabels : IClassFixture<HttpClientTestFixture>
         var content = JsonDocument.Parse(client.Content);
         var stream = content.RootElement.GetProperty("streams")[0].GetProperty("stream");
 
-        stream.GetProperty("exception_type").GetString().ShouldBe("System.InvalidOperationException");
-        stream.GetProperty("exception").GetString().ShouldContain("Test exception message");
+        Assert.Equal("System.InvalidOperationException", stream.GetProperty("exception_type").GetString());
+        Assert.Contains("Test exception message", stream.GetProperty("exception").GetString());
     }
 
     [Fact]
@@ -108,7 +107,7 @@ public class ExceptionLabels : IClassFixture<HttpClientTestFixture>
         var content = JsonDocument.Parse(client.Content);
         var stream = content.RootElement.GetProperty("streams")[0].GetProperty("stream");
 
-        stream.TryGetProperty("exception_type", out _).ShouldBeFalse();
+        Assert.False(stream.TryGetProperty("exception_type", out _));
     }
 
     [Fact]
@@ -131,7 +130,7 @@ public class ExceptionLabels : IClassFixture<HttpClientTestFixture>
         var content = JsonDocument.Parse(client.Content);
         var stream = content.RootElement.GetProperty("streams")[0].GetProperty("stream");
 
-        stream.TryGetProperty("exception_type", out _).ShouldBeFalse();
-        stream.TryGetProperty("exception", out _).ShouldBeFalse();
+        Assert.False(stream.TryGetProperty("exception_type", out _));
+        Assert.False(stream.TryGetProperty("exception", out _));
     }
 }

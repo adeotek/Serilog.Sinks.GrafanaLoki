@@ -1,6 +1,5 @@
 using Serilog.Events;
 using Serilog.Sinks.GrafanaLoki.Internal;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.InternalTests;
@@ -18,6 +17,6 @@ public class LogEventLevelExtensionsTests
     {
         var result = level.ToGrafanaString();
 
-        result.ShouldBe(expected);
+        Assert.Equal(expected, result);
     }
 }

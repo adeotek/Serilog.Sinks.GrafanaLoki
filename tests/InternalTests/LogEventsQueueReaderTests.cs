@@ -1,5 +1,4 @@
 using Serilog.Sinks.GrafanaLoki.Internal;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.InternalTests;
@@ -13,8 +12,8 @@ public class LogEventsQueueReaderTests
 
         var batch = LogEventsQueueReader.Read(queue, null, null);
 
-        batch.LogEvents.ShouldBeEmpty();
-        batch.HasReachedLimit.ShouldBeFalse();
+        Assert.Empty(batch.LogEvents);
+        Assert.False(batch.HasReachedLimit);
     }
 
     [Fact]
@@ -27,8 +26,8 @@ public class LogEventsQueueReaderTests
 
         var batch = LogEventsQueueReader.Read(queue, null, null);
 
-        batch.LogEvents.Count.ShouldBe(3);
-        batch.HasReachedLimit.ShouldBeFalse();
+        Assert.Equal(3, batch.LogEvents.Count);
+        Assert.False(batch.HasReachedLimit);
     }
 
     [Fact]
@@ -42,8 +41,8 @@ public class LogEventsQueueReaderTests
 
         var batch = LogEventsQueueReader.Read(queue, logEventsInBatchLimit: 5, batchSizeLimitBytes: null);
 
-        batch.LogEvents.Count.ShouldBe(5);
-        batch.HasReachedLimit.ShouldBeTrue();
+        Assert.Equal(5, batch.LogEvents.Count);
+        Assert.True(batch.HasReachedLimit);
     }
 
     [Fact]
@@ -56,7 +55,7 @@ public class LogEventsQueueReaderTests
         // Set a large batch size so the single entry fits
         var batch = LogEventsQueueReader.Read(queue, logEventsInBatchLimit: null, batchSizeLimitBytes: 1024 * 1024);
 
-        batch.LogEvents.Count.ShouldBe(1);
+        Assert.Single(batch.LogEvents);
     }
 
     [Fact]
@@ -70,8 +69,8 @@ public class LogEventsQueueReaderTests
         // Set batch size limit very small so the entry exceeds it
         var batch = LogEventsQueueReader.Read(queue, logEventsInBatchLimit: null, batchSizeLimitBytes: 1);
 
-        batch.LogEvents.ShouldBeEmpty();
-        batch.HasReachedLimit.ShouldBeFalse();
+        Assert.Empty(batch.LogEvents);
+        Assert.False(batch.HasReachedLimit);
     }
 
     [Fact]
@@ -83,7 +82,7 @@ public class LogEventsQueueReaderTests
 
         var batch = LogEventsQueueReader.Read(queue, logEventsInBatchLimit: 10, batchSizeLimitBytes: 100);
 
-        batch.LogEvents.Count.ShouldBe(1);
-        batch.HasReachedLimit.ShouldBeFalse(); // Not the limit, just no more fitting items (or reached end)
+        Assert.Single(batch.LogEvents);
+        Assert.False(batch.HasReachedLimit); // Not the limit, just no more fitting items (or reached end)
     }
 }

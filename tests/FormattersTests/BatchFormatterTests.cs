@@ -1,5 +1,4 @@
 using Serilog.Sinks.GrafanaLoki.Formatters;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.FormattersTests;
@@ -11,7 +10,7 @@ public class BatchFormatterTests
     {
         var formatter = new BatchFormatter();
 
-        Should.Throw<ArgumentNullException>(() =>
+        Assert.Throws<ArgumentNullException>(() =>
             formatter.Format(null!, new StringWriter()));
     }
 
@@ -20,7 +19,7 @@ public class BatchFormatterTests
     {
         var formatter = new BatchFormatter();
 
-        Should.Throw<ArgumentNullException>(() =>
+        Assert.Throws<ArgumentNullException>(() =>
             formatter.Format(Array.Empty<LogEventEntry>(), null!));
     }
 
@@ -32,7 +31,7 @@ public class BatchFormatterTests
 
         formatter.Format(Array.Empty<LogEventEntry>(), writer);
 
-        writer.ToString().ShouldBeEmpty();
+        Assert.Empty(writer.ToString());
     }
 
     [Fact]
@@ -49,7 +48,7 @@ public class BatchFormatterTests
 
         formatter.Format(entries, writer);
 
-        writer.ToString().ShouldBeEmpty();
+        Assert.Empty(writer.ToString());
     }
 
     [Fact]
@@ -63,10 +62,10 @@ public class BatchFormatterTests
         formatter.Format(new[] { entry }, writer);
 
         var json = writer.ToString();
-        json.ShouldNotBeNullOrEmpty();
-        json.ShouldStartWith("{\"streams\":[");
-        json.ShouldContain("\"level\":\"error\"");
-        json.ShouldContain("Test message");
+        Assert.False(string.IsNullOrEmpty(json));
+        Assert.StartsWith("{\"streams\":[", json);
+        Assert.Contains("\"level\":\"error\"", json);
+        Assert.Contains("Test message", json);
     }
 
     [Fact]
@@ -85,9 +84,9 @@ public class BatchFormatterTests
         formatter.Format(new[] { entry }, writer);
 
         var json = writer.ToString();
-        json.ShouldContain("\"app\":\"myapp\"");
-        json.ShouldContain("\"env\":\"production\"");
-        json.ShouldContain("\"level\":\"info\"");
+        Assert.Contains("\"app\":\"myapp\"", json);
+        Assert.Contains("\"env\":\"production\"", json);
+        Assert.Contains("\"level\":\"info\"", json);
     }
 
     [Fact]
@@ -112,8 +111,8 @@ public class BatchFormatterTests
         var errorCount = CountOccurrences(json, "\"level\":\"error\"");
         var warningCount = CountOccurrences(json, "\"level\":\"warning\"");
 
-        errorCount.ShouldBe(1); // One stream for error group
-        warningCount.ShouldBe(1); // One stream for warning group
+        Assert.Equal(1, errorCount); // One stream for error group
+        Assert.Equal(1, warningCount); // One stream for warning group
     }
 
     [Fact]
@@ -131,8 +130,8 @@ public class BatchFormatterTests
         formatter.Format(new[] { entry1, entry2 }, writer);
 
         var json = writer.ToString();
-        json.ShouldContain("Message 1");
-        json.ShouldContain("Message 2");
+        Assert.Contains("Message 1", json);
+        Assert.Contains("Message 2", json);
     }
 
     [Fact]
@@ -151,9 +150,9 @@ public class BatchFormatterTests
         formatter.Format(new[] { entry }, writer);
 
         var json = writer.ToString();
-        json.ShouldContain("\"level\":\"override");
+        Assert.Contains("\"level\":\"override", json);
         // AddOrAppend appends, so original gets appended after override
-        json.ShouldContain("overrideoriginal");
+        Assert.Contains("overrideoriginal", json);
     }
 
     private static int CountOccurrences(string text, string search)

@@ -1,5 +1,4 @@
 using Serilog.Sinks.GrafanaLoki.Common;
-using Shouldly;
 using Xunit;
 
 namespace Serilog.Sinks.GrafanaLoki.Tests.CommonTests;
@@ -13,13 +12,13 @@ public class ExponentialBackoffConnectionScheduleTests
 
         var schedule = new ExponentialBackoffConnectionSchedule(period);
 
-        schedule.ShouldNotBeNull();
+        Assert.NotNull(schedule);
     }
 
     [Fact]
     public void Constructor_ThrowsOnNegativePeriod()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() =>
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
             new ExponentialBackoffConnectionSchedule(TimeSpan.FromSeconds(-1)));
     }
 
@@ -28,7 +27,7 @@ public class ExponentialBackoffConnectionScheduleTests
     {
         var schedule = new ExponentialBackoffConnectionSchedule(TimeSpan.Zero);
 
-        schedule.ShouldNotBeNull();
+        Assert.NotNull(schedule);
     }
 
     [Fact]
@@ -39,7 +38,7 @@ public class ExponentialBackoffConnectionScheduleTests
 
         schedule.MarkFailure();
 
-        schedule.NextInterval.ShouldBe(period);
+        Assert.Equal(period, schedule.NextInterval);
     }
 
     [Fact]
@@ -52,7 +51,7 @@ public class ExponentialBackoffConnectionScheduleTests
 
         schedule.MarkSuccess();
 
-        schedule.NextInterval.ShouldBe(period);
+        Assert.Equal(period, schedule.NextInterval);
     }
 
     [Fact]
@@ -64,17 +63,17 @@ public class ExponentialBackoffConnectionScheduleTests
         // 1 failure: use period
         schedule.MarkFailure();
         var interval1 = schedule.NextInterval;
-        interval1.ShouldBe(period);
+        Assert.Equal(period, interval1);
 
         // 2 failures: 2x
         schedule.MarkFailure();
         var interval2 = schedule.NextInterval;
-        interval2.ShouldBeGreaterThan(interval1);
+        Assert.True(interval2 > interval1);
 
         // 3 failures: 4x
         schedule.MarkFailure();
         var interval3 = schedule.NextInterval;
-        interval3.ShouldBeGreaterThan(interval2);
+        Assert.True(interval3 > interval2);
     }
 
     [Fact]
@@ -89,7 +88,7 @@ public class ExponentialBackoffConnectionScheduleTests
             schedule.MarkFailure();
         }
 
-        schedule.NextInterval.ShouldBeLessThanOrEqualTo(ExponentialBackoffConnectionSchedule.MaximumBackoffInterval);
+        Assert.True(schedule.NextInterval <= ExponentialBackoffConnectionSchedule.MaximumBackoffInterval);
     }
 
     [Fact]
@@ -103,7 +102,7 @@ public class ExponentialBackoffConnectionScheduleTests
         schedule.MarkFailure();
         schedule.MarkFailure();
 
-        schedule.NextInterval.ShouldBeGreaterThanOrEqualTo(ExponentialBackoffConnectionSchedule.MinimumBackoffPeriod);
+        Assert.True(schedule.NextInterval >= ExponentialBackoffConnectionSchedule.MinimumBackoffPeriod);
     }
 
     [Fact]
@@ -116,6 +115,6 @@ public class ExponentialBackoffConnectionScheduleTests
         schedule.MarkFailure();
         schedule.MarkSuccess();
 
-        schedule.NextInterval.ShouldBe(period);
+        Assert.Equal(period, schedule.NextInterval);
     }
 }
