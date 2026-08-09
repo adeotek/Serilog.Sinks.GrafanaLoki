@@ -84,6 +84,7 @@ public class GrafanaLokiHttpSink : ILogEventSink, IDisposable
         entry.Labels.Add(GrafanaLokiHelpers.LogLevelLabelName, logEvent.Level.ToGrafanaString());
         if (logEvent.Exception != null)
         {
+            entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionTypeLabelName, logEvent.Exception.GetType().Name);
             entry.Labels.AddOrReplace(GrafanaLokiHelpers.ExceptionLabelName, logEvent.Exception.ToString().Replace("\"", _propertiesStringDelimiter ?? "`"));
         }
         foreach (var property in logEvent.Properties)

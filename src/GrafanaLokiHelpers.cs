@@ -3,6 +3,7 @@
 public static class GrafanaLokiHelpers
 {
     public const string LogLevelLabelName = "level";
+    public const string ExceptionTypeLabelName = "exception_type";
     public const string ExceptionLabelName = "exception";
     public const string DefaultOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} | [{Level:u3}] | {Message:lj} | {Exception}";
     public const string PostDataUri = "/loki/api/{0}/push";
