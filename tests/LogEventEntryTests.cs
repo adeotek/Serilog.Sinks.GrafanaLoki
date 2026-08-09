@@ -57,4 +57,43 @@ public class LogEventEntryTests
         Assert.Equal(size1, size2);
         Assert.True(size1 > 0, "Cached size should be positive, not the -1 sentinel");
     }
+
+    [Fact]
+    public void Metadata_IsInitializedEmpty()
+    {
+        var entry = new LogEventEntry("Test message");
+
+        Assert.NotNull(entry.Metadata);
+        Assert.Empty(entry.Metadata);
+    }
+
+    [Fact]
+    public void GetByteSize_IncludesMetadata_WhenMetadataAdded()
+    {
+        var entry = new LogEventEntry("Test message");
+
+        var sizeBefore = entry.GetByteSize();
+        entry.Metadata.Add("key", "value");
+        var sizeAfter = entry.GetByteSize();
+
+        Assert.True(sizeAfter > sizeBefore, "Size should increase when metadata is added");
+    }
+
+    [Fact]
+    public void GetByteSize_ReturnsCorrectValue_WithMetadata()
+    {
+        var entry = new LogEventEntry("Test message");
+        entry.Labels.Add("level", "error");
+        entry.Metadata.Add("trace_id", "abc123");
+        entry.Metadata.Add("span_id", "def456");
+
+        var size = entry.GetByteSize();
+
+        var expectedSize = sizeof(long)
+            + ByteSize.From("Test message")
+            + ByteSize.From("level") + ByteSize.From("error")
+            + ByteSize.From("trace_id") + ByteSize.From("abc123")
+            + ByteSize.From("span_id") + ByteSize.From("def456");
+        Assert.Equal(expectedSize, size);
+    }
 }
