@@ -36,7 +36,8 @@ jobs:
         id: nuget_login
         with:
           user: 'adeotek'
-
-      # 3. Use the dynamic output token instead of ${{ secrets.NUGET_API_KEY }}
       - name: Publish to NuGet.org
-        run: dotnet nuget push --source "https://api.nuget.org/v3/index.json" --api-key ${{ steps.nuget_login.outputs.token }} ./Serilog.Sinks.GrafanaLoki.${{ steps.get_version.outputs.version }}.nupkg
+        run: |
+          dotnet nuget push ./Serilog.Sinks.GrafanaLoki.${{ steps.get_version.outputs.version }}.nupkg \
+            --source "https://api.nuget.org/v3/index.json" \
+            --api-key ${{ steps.nuget_login.outputs.token }}
